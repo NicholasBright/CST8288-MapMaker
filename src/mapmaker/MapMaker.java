@@ -5,17 +5,28 @@
  */
 package mapmaker;
 
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
 /**
  *
  * @author owner
  */
-public class MapMaker {
-
+public class MapMaker extends Application {
+    
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
+        launch(args);
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        Scene scene = new Scene(GuiController.createRootPane(), 600, 400);
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
     
 }
