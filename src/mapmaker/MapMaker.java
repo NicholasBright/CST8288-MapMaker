@@ -5,6 +5,7 @@
  */
 package mapmaker;
 
+import java.io.File;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -25,7 +26,17 @@ public class MapMaker extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         Scene scene = new Scene(GuiController.createRootPane(), 600, 400);
+        
+        try{
+            String css = MapMaker.class.getResource("resources/css/style.css").toExternalForm(); 
+            scene.getStylesheets().add(css);
+        }
+        catch(Exception e){
+            System.out.print(e);
+        }
+        
         primaryStage.setScene(scene);
+        primaryStage.setTitle("CST8288 - Map Maker");
         primaryStage.show();
     }
     
