@@ -6,13 +6,17 @@
 package mapmaker;
 
 import javafx.application.Platform;
+import javafx.geometry.Orientation;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 
 /**
@@ -22,10 +26,14 @@ import javafx.scene.layout.BorderPane;
 public class GuiController {
     static BorderPane rootPane;
     private static MenuBar menuBar;
+    private static ToolBar statusBar;
+    private static ToolBar toolsBar;
     
     public static BorderPane createRootPane(){
         rootPane = new BorderPane();
         rootPane.setTop(createMenuBar());
+        rootPane.setBottom(createStatusBar());
+        rootPane.setLeft(createToolsBar());
         return rootPane;
     }
     
@@ -80,6 +88,7 @@ public class GuiController {
         creditMenuItem.setOnAction( e -> {
             Alert alert = new Alert(AlertType.INFORMATION);
             alert.setTitle("Credits");
+            alert.setHeaderText("Credits");
             alert.setContentText( ResourceLoader.loadTxtToString("resources/icons/credits.txt") );
             alert.showAndWait();
         });
@@ -90,6 +99,7 @@ public class GuiController {
         infoMenuItem.setOnAction( e -> {
             Alert alert = new Alert(AlertType.INFORMATION);
             alert.setTitle("Info");
+            alert.setHeaderText("Info");
             alert.setContentText( ResourceLoader.loadTxtToString("resources/icons/info.txt") );
             alert.showAndWait();
         });
@@ -102,6 +112,7 @@ public class GuiController {
         helpMenuItem.setOnAction( e -> {
             Alert alert = new Alert(AlertType.INFORMATION);
             alert.setTitle("Help");
+            alert.setHeaderText("Help");
             alert.setContentText( ResourceLoader.loadTxtToString("resources/icons/help.txt") );
             alert.showAndWait();
         });
@@ -109,5 +120,34 @@ public class GuiController {
         helpMenu.getItems().addAll(creditMenuItem, infoMenuItem, separatorMenuItem, helpMenuItem);
         
         return helpMenu;
+    }
+    
+    private static ToolBar createStatusBar(){
+        statusBar = new ToolBar();
+        Label selectedName = new Label("None");
+        selectedName.setId("NameOfSelectedTool");
+        statusBar.getItems().addAll(new Label("Selected: "), selectedName, new Separator());
+        return statusBar;
+    }
+    
+    private static void updateSelected(String newName){
+        Label selectedName = (Label)statusBar.lookup("#NameOfSelectedTool");
+        selectedName.setText(newName);
+    }
+    
+    private static ToolBar createToolsBar(){
+        toolsBar = new ToolBar();
+        toolsBar.setOrientation(Orientation.VERTICAL);
+        toolsBar.setId("ToolBar");
+        
+        Button selectToolButton = new Button();
+        selectToolButton.setId("Select");
+        selectToolButton.setOnAction( e -> {
+            updateSelected("Select");
+        });
+        
+        toolsBar.getItems().addAll(selectToolButton);
+        
+        return toolsBar;
     }
 }
