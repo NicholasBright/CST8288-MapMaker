@@ -5,6 +5,7 @@
  */
 package mapmaker;
 
+import java.io.FileNotFoundException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
@@ -55,25 +56,35 @@ public class MapMaker extends Application implements LogData {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        LOGGER.info("Start of method");
+        
+        LOGGER.info("Creating scene");
         rootScene = new Scene(GuiController.createRootPane(), 800, 600);
+        
+        LOGGER.info("Setting stage properties");
         primaryStage.setScene(rootScene);
         primaryStage.setMinWidth(600);
         primaryStage.setMinHeight(400);
         primaryStage.setTitle("CST8288 - Map Maker");
         
-        try{
+        LOGGER.info("Loading stylesheet");
+        
+        try {
             rootScene.getStylesheets().add( ResourceLoader.getCSSUri("style.css"));
         }
-        catch(Exception e){
-            System.out.print(e);
+        catch (FileNotFoundException e){
+            LOGGER.log(Level.WARNING, "CSS sheet couldn't be found", e);
         }
         
+        LOGGER.info("Showing stage");
         primaryStage.show();
+        LOGGER.info("End of method");
     }
     
     
     @Override
     public void initiateLogging(){
         LogData.initiateLogging(this.getClass().getSimpleName(), LOGGER);
+        LOGGER.info("Logging started");
     }
 }
