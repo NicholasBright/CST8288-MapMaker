@@ -25,7 +25,7 @@ interface LogData {
         String CWD = System.getProperty("user.dir");
         try {
             FileHandler fileHandler = new FileHandler(CWD + "/logs/" + className + ".log");
-            fileHandler.setFilter((LogRecord lr) -> {
+            logger.setFilter((LogRecord lr) -> {
                 if(MapMaker.allLogging){
                     return true;
                 }
