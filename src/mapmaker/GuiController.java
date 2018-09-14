@@ -18,6 +18,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.Separator;
@@ -318,13 +319,56 @@ public class GuiController implements LogData {
             LOGGER.info("End of method");
         });
         
+        LOGGER.info("Creating \"Room\" MenuButton");
+        MenuButton roomMenuButton = createRoomMenuButton();
+        
         LOGGER.info("Adding items to \"toolsBar\" ToolBar");
         toolsBar.getItems().addAll(
             selectToolButton,
-            moveToolButton);
+            moveToolButton,
+            roomMenuButton);
         
         LOGGER.info("End of method");
         return toolsBar;
+    }
+    
+    private static MenuButton createRoomMenuButton(){
+        LOGGER.info("Start of method");
+        LOGGER.info("Creainng \"Room\" MenuButton");
+        MenuButton roomMenuButton = new MenuButton();
+        roomMenuButton.setId("Room");
+        
+        LOGGER.info("Creating \"Line\" MenuItem");
+        MenuItem lineMenuItem = new MenuItem("Line");
+        lineMenuItem.setOnAction( e -> {
+            LOGGER.info("Start of method");
+            updateSelected("Line Tool");
+            updateMessage("Currently not implemented");
+            LOGGER.info("End of method");
+        });
+        
+        LOGGER.info("Creating \"Triangle\" MenuItem");
+        MenuItem triangleMenuItem = new MenuItem("Triangle");
+        
+        LOGGER.info("Creating \"Rectangle\" MenuItem");
+        MenuItem rectangleMenuItem = new MenuItem("Rectangle");
+        
+        LOGGER.info("Creating \"Pentagon\" MenuItem");
+        MenuItem pentagonMenuItem = new MenuItem("Pentagon");
+        
+        LOGGER.info("Creating \"Hexagon\" MenuItem");
+        MenuItem hexagonMenuItem = new MenuItem("Hexagon");
+        
+        roomMenuButton.getItems().addAll(
+            lineMenuItem,
+            triangleMenuItem,
+            rectangleMenuItem,
+            pentagonMenuItem,
+            hexagonMenuItem
+            );
+        
+        LOGGER.info("End of method");
+        return roomMenuButton;
     }
     
     @Override
