@@ -6,7 +6,6 @@
 package mapmaker;
 
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -22,7 +21,6 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 
 /**
  *
@@ -130,11 +128,8 @@ public class GuiController {
     private static ToolBar createStatusBar(){
         statusBar = new ToolBar();
         statusBar.setId("StatusBar");
-        statusBar.addEventHandler(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent e) {
+        statusBar.addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> {
                 statusBar.setPrefHeight(statusBar.getHeight() + e.getY() * -1);
-            }
         });
         
         Label selectedTitle = new Label("Selected: ");

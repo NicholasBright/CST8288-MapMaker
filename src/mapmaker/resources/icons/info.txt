@@ -1,9 +1,0 @@
-Created by: Nicholas Leo Bright
-Student ID: 040802999
-
-Class: CST8288 010with 
-Professor: Shahriar Emani
-
-Version: 0.1a
-Project Started on: 2018/09/11
-Last Updated on: 2018/09/12

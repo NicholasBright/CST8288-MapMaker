@@ -32,9 +32,7 @@ public class MapMaker extends Application {
         primaryStage.setTitle("CST8288 - Map Maker");
         
         try{
-            rootScene.getStylesheets().add( (new File("resources/css/style.css")).getPath());
-            //String css = MapMaker.class.getResource("resources/css/style.css").toExternalForm(); 
-            //rootScene.getStylesheets().add(css);
+            rootScene.getStylesheets().add( new File("resources/css/style.css").toURI().toString());
         }
         catch(Exception e){
             System.out.print(e);

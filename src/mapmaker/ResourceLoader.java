@@ -5,9 +5,9 @@
  */
 package mapmaker;
 
-import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.Scanner;
 
 /**
  *
@@ -15,13 +15,14 @@ import java.io.InputStreamReader;
  */
 public class ResourceLoader {
     public static String loadTxtToString(String path){
+        /**
+         * TODO - Update function to
+         **/
         String txtString = new String();
-        try (BufferedReader txtReader = new BufferedReader(
-                new InputStreamReader(
-                        GuiController.class.getResourceAsStream(path)))) {
-            String nextLine;
-            while ((nextLine = txtReader.readLine()) != null)
-                txtString += nextLine + "\n";
+        try (Scanner scanner = new Scanner(new File(path));) {
+            while(scanner.hasNextLine()){
+                txtString += scanner.nextLine() + System.getProperty("line.separator");
+            }
         } catch (IOException ex) {
             txtString = ex.toString();
         }
