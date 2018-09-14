@@ -15,7 +15,7 @@ import javafx.stage.Stage;
  * @author owner
  */
 public class MapMaker extends Application {
-    
+    static Scene rootScene;
     /**
      * @param args the command line arguments
      */
@@ -25,18 +25,21 @@ public class MapMaker extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Scene scene = new Scene(GuiController.createRootPane(), 600, 400);
+        rootScene = new Scene(GuiController.createRootPane(), 800, 600);
+        primaryStage.setScene(rootScene);
+        primaryStage.setMinWidth(600);
+        primaryStage.setMinHeight(400);
+        primaryStage.setTitle("CST8288 - Map Maker");
         
         try{
-            String css = MapMaker.class.getResource("resources/css/style.css").toExternalForm(); 
-            scene.getStylesheets().add(css);
+            rootScene.getStylesheets().add( (new File("resources/css/style.css")).getPath());
+            //String css = MapMaker.class.getResource("resources/css/style.css").toExternalForm(); 
+            //rootScene.getStylesheets().add(css);
         }
         catch(Exception e){
             System.out.print(e);
         }
         
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("CST8288 - Map Maker");
         primaryStage.show();
     }
     

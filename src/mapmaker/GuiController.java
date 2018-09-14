@@ -6,6 +6,7 @@
 package mapmaker;
 
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -14,10 +15,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 
 /**
  *
@@ -124,15 +129,51 @@ public class GuiController {
     
     private static ToolBar createStatusBar(){
         statusBar = new ToolBar();
+        statusBar.setId("StatusBar");
+        statusBar.addEventHandler(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent e) {
+                statusBar.setPrefHeight(statusBar.getHeight() + e.getY() * -1);
+            }
+        });
+        
+        Label selectedTitle = new Label("Selected: ");
+        selectedTitle.setMinWidth(Label.USE_PREF_SIZE);
         Label selectedName = new Label("None");
         selectedName.setId("NameOfSelectedTool");
-        statusBar.getItems().addAll(new Label("Selected: "), selectedName, new Separator());
+        selectedName.setMinWidth(Label.USE_PREF_SIZE);
+        
+        Label messageText = new Label("");
+        messageText.setId("MessageText");
+        messageText.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+            Alert alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle("Message Alert");
+            alert.setHeaderText("Message");
+            alert.setContentText(messageText.getText());
+            alert.showAndWait();
+        });
+        messageText.setTextOverrun(OverrunStyle.ELLIPSIS);
+        messageText.setWrapText(true);
+        
+        Tooltip tp = new Tooltip("Click for popup of message");
+        Tooltip.install(messageText, tp);
+        
+        Label messageTitle = new Label("Message: ");
+        messageTitle.setMinWidth(Label.USE_PREF_SIZE);
+        
+        statusBar.getItems().addAll(selectedTitle, selectedName, new Separator(), messageTitle, messageText);
+        
         return statusBar;
     }
     
-    private static void updateSelected(String newName){
+    public static void updateSelected(String newName){
         Label selectedName = (Label)statusBar.lookup("#NameOfSelectedTool");
         selectedName.setText(newName);
+    }
+    
+    public static void updateMessage(String newMessage){
+        Label messageText = (Label)statusBar.lookup("#MessageText");
+        messageText.setText(newMessage);
     }
     
     private static ToolBar createToolsBar(){
@@ -144,9 +185,17 @@ public class GuiController {
         selectToolButton.setId("Select");
         selectToolButton.setOnAction( e -> {
             updateSelected("Select");
+            updateMessage("Currently not implemented");
         });
         
-        toolsBar.getItems().addAll(selectToolButton);
+        Button moveToolButton = new Button();
+        moveToolButton.setId("Move");
+        moveToolButton.setOnAction( e -> {
+            updateSelected("Move");
+            updateMessage("Currently not implemented but this message is an essay because I want to make this as obtuse as possible for myself please god let this work I am just stalling for length at the moment");
+        });
+        
+        toolsBar.getItems().addAll(selectToolButton, moveToolButton);
         
         return toolsBar;
     }
