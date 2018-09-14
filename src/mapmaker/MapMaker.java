@@ -5,7 +5,8 @@
  */
 package mapmaker;
 
-import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -14,12 +15,41 @@ import javafx.stage.Stage;
  *
  * @author owner
  */
-public class MapMaker extends Application {
+public class MapMaker extends Application implements LogData {
     static Scene rootScene;
+    static boolean logging = false;
+    static boolean allLogging = false;
+    private static final Logger LOGGER = Logger.getLogger(MapMaker.class.getName());
+    
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        int iter = 0;
+        for(String arg: args){
+            if(arg.startsWith("-") && arg.length() > 1){
+                for(char c : arg.substring(1).toCharArray()){
+                    switch(c){
+                        case 'l':
+                            logging = true;
+                            break;
+                        case 'a':
+                            allLogging = true;
+                            break;
+                        case 'L':
+                            logging = allLogging = true;
+                            break;
+                    }
+                }
+            }
+        }
+        
+        new MapMaker().initiateLogging();
+        new GuiController().initiateLogging();
+        new ResourceLoader().initiateLogging();
+        
+        LOGGER.log(Level.INFO,"Launching app");
+        
         launch(args);
     }
 
@@ -32,7 +62,7 @@ public class MapMaker extends Application {
         primaryStage.setTitle("CST8288 - Map Maker");
         
         try{
-            rootScene.getStylesheets().add( new File("resources/css/style.css").toURI().toString());
+            rootScene.getStylesheets().add( ResourceLoader.getCSSUri("style.css"));
         }
         catch(Exception e){
             System.out.print(e);
@@ -41,4 +71,9 @@ public class MapMaker extends Application {
         primaryStage.show();
     }
     
+    
+    @Override
+    public void initiateLogging(){
+        LogData.initiateLogging(this.getClass().getSimpleName(), LOGGER);
+    }
 }
