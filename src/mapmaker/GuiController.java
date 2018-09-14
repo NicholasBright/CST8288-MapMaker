@@ -5,7 +5,12 @@
  */
 package mapmaker;
 
+import java.io.FileNotFoundException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -26,11 +31,13 @@ import javafx.scene.layout.BorderPane;
  *
  * @author owner
  */
-public class GuiController {
+public class GuiController implements LogData {
     static BorderPane rootPane;
     private static MenuBar menuBar;
     private static ToolBar statusBar;
     private static ToolBar toolsBar;
+    
+    private static final Logger LOGGER = Logger.getLogger(GuiController.class.getSimpleName());
     
     public static BorderPane createRootPane(){
         rootPane = new BorderPane();
@@ -88,23 +95,47 @@ public class GuiController {
         Label creditLabel = new Label();
         creditLabel.setId("Credit-icon");
         MenuItem creditMenuItem = new MenuItem("Credit", creditLabel);
-        creditMenuItem.setOnAction( e -> {
-            Alert alert = new Alert(AlertType.INFORMATION);
-            alert.setTitle("Credits");
-            alert.setHeaderText("Credits");
-            alert.setContentText( ResourceLoader.loadTxtToString("resources/icons/credits.txt") );
-            alert.showAndWait();
+        creditMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+            Alert alert = null;
+            
+            @Override
+            public void handle(ActionEvent e) {
+                if(alert == null){
+                    alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Credits");
+                    alert.setHeaderText("Credits");
+                    try {
+                        alert.setContentText( ResourceLoader.loadTxtToString("creditz.txt") );
+                    } catch (FileNotFoundException ex) {
+                        LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                        alert.setContentText( "Credits file not found. Report error to developer." );
+                        alert.showAndWait();
+                        alert = null;
+                        return;
+                    }
+                }
+                alert.showAndWait();
+            }
         });
         
         Label infoLabel = new Label();
         infoLabel.setId("Info-icon");
         MenuItem infoMenuItem = new MenuItem("Info", infoLabel);
-        infoMenuItem.setOnAction( e -> {
-            Alert alert = new Alert(AlertType.INFORMATION);
-            alert.setTitle("Info");
-            alert.setHeaderText("Info");
-            alert.setContentText( ResourceLoader.loadTxtToString("resources/icons/info.txt") );
-            alert.showAndWait();
+        infoMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+            Alert alert = null;
+            @Override
+            public void handle(ActionEvent e) {
+                if(alert == null){
+                    alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Info");
+                    alert.setHeaderText("Info");
+                    try {
+                        alert.setContentText( ResourceLoader.loadTxtToString("info.txt") );
+                    } catch (FileNotFoundException ex) {
+                    }
+                }
+                alert.showAndWait();
+            }
         });
         
         SeparatorMenuItem separatorMenuItem = new SeparatorMenuItem();
@@ -112,12 +143,21 @@ public class GuiController {
         Label helpLabel = new Label();
         helpLabel.setId("Help-icon");
         MenuItem helpMenuItem = new MenuItem("Help", helpLabel);
-        helpMenuItem.setOnAction( e -> {
-            Alert alert = new Alert(AlertType.INFORMATION);
-            alert.setTitle("Help");
-            alert.setHeaderText("Help");
-            alert.setContentText( ResourceLoader.loadTxtToString("resources/icons/help.txt") );
-            alert.showAndWait();
+        helpMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+            Alert alert = null;
+            @Override
+            public void handle(ActionEvent e) {
+                if(alert == null){
+                    alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Help");
+                    alert.setHeaderText("Help");
+                    try {
+                        alert.setContentText( ResourceLoader.loadTxtToString("help.txt") );
+                    } catch (FileNotFoundException ex) {
+                    }
+                }
+                alert.showAndWait();
+            }
         });
         
         helpMenu.getItems().addAll(creditMenuItem, infoMenuItem, separatorMenuItem, helpMenuItem);
@@ -140,12 +180,19 @@ public class GuiController {
         
         Label messageText = new Label("");
         messageText.setId("MessageText");
-        messageText.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-            Alert alert = new Alert(AlertType.INFORMATION);
-            alert.setTitle("Message Alert");
-            alert.setHeaderText("Message");
-            alert.setContentText(messageText.getText());
-            alert.showAndWait();
+        messageText.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+            Alert alert = null;
+            
+            @Override
+            public void handle(MouseEvent e) {
+                if(alert == null){
+                    alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Message Alert");
+                    alert.setHeaderText("Message");
+                    alert.setContentText(messageText.getText());
+                }
+                alert.showAndWait();
+            }
         });
         messageText.setTextOverrun(OverrunStyle.ELLIPSIS);
         messageText.setWrapText(true);
@@ -193,5 +240,10 @@ public class GuiController {
         toolsBar.getItems().addAll(selectToolButton, moveToolButton);
         
         return toolsBar;
+    }
+    
+    @Override
+    public void initiateLogging(){
+        LogData.initiateLogging(this.getClass().getSimpleName(), LOGGER);
     }
 }
