@@ -5,13 +5,18 @@
  */
 package mapmaker;
 
+import mapmaker.tool.Tool;
 import java.io.FileNotFoundException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
 import javafx.geometry.Orientation;
+import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -27,6 +32,8 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.shape.Polygon;
+import mapmaker.tool.SelectTool;
 
 /**
  *
@@ -49,6 +56,9 @@ public class GuiController implements LogData {
         rootPane.setTop(createMenuBar());
         rootPane.setBottom(createStatusBar());
         rootPane.setLeft(createToolsBar());
+        
+        LOGGER.info("Adding Center \"MapArea\" Pane");
+        rootPane.setCenter(MapArea.initPane());
         
         LOGGER.info("End of method");
         return rootPane;
@@ -85,6 +95,14 @@ public class GuiController implements LogData {
         saveMenuItem.setDisable(true);
         saveMenuItem.setId("Save");
         
+        LOGGER.info("Creating \"Reload Style\" MenuItem");
+        Label reloadStyleLabel = new Label();
+        reloadStyleLabel.setId("CSS-icon");
+        MenuItem reloadStyleMenuItem = new MenuItem("Reload Style", reloadStyleLabel);
+        reloadStyleMenuItem.setOnAction(e -> {
+            MapMaker.loadStylesheet();
+        });
+        
         LOGGER.info("Creating SeparatorMenuItem");
         SeparatorMenuItem separatorMenuItem = new SeparatorMenuItem();
         
@@ -101,6 +119,7 @@ public class GuiController implements LogData {
         LOGGER.info("Adding items to fileMenu");
         fileMenu.getItems().addAll(newMenuItem, 
             saveMenuItem,
+            reloadStyleMenuItem,
             separatorMenuItem,
             exitMenuItem);
         
@@ -223,10 +242,6 @@ public class GuiController implements LogData {
         LOGGER.info("Creating \"statusBar\" ToolBar");
         statusBar = new ToolBar();
         statusBar.setId("StatusBar");
-        statusBar.addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> {
-                LOGGER.info("Resizing \"statusBar\" ToolBar");
-                statusBar.setPrefHeight(statusBar.getHeight() + e.getY() * -1);
-        });
         
         LOGGER.info("Creating \"Selected\" Label");
         Label selectedTitle = new Label("Selected: ");
@@ -305,7 +320,8 @@ public class GuiController implements LogData {
         selectToolButton.setOnAction( e -> {
             LOGGER.info("Start of method");
             updateSelected("Select");
-            updateMessage("Currently not implemented");
+            updateMessage("Selects objects in the map");
+            MapArea.setTool(new SelectTool());
             LOGGER.info("End of method");
         });
         
@@ -322,11 +338,44 @@ public class GuiController implements LogData {
         LOGGER.info("Creating \"Room\" MenuButton");
         MenuButton roomMenuButton = createRoomMenuButton();
         
+        LOGGER.info("Creating \"Path\" Button");
+        Button pathToolButton = new Button();
+        pathToolButton.setId("Path");
+        pathToolButton.setOnAction( e -> {
+            LOGGER.info("Start of method");
+            updateSelected("Path");
+            updateMessage("Currently not implemented");
+            LOGGER.info("End of method");
+        });
+        
+        LOGGER.info("Creating \"Erase\" Button");
+        Button eraseToolButton = new Button();
+        eraseToolButton.setId("Erase");
+        eraseToolButton.setOnAction( e -> {
+            LOGGER.info("Start of method");
+            updateSelected("Erase");
+            updateMessage("Currently not implemented");
+            LOGGER.info("End of method");
+        });
+        
+        LOGGER.info("Creating \"Door\" Button");
+        Button doorToolButton = new Button();
+        doorToolButton.setId("Door");
+        doorToolButton.setOnAction( e -> {
+            LOGGER.info("Start of method");
+            updateSelected("Door");
+            updateMessage("Currently not implemented");
+            LOGGER.info("End of method");
+        });
+        
         LOGGER.info("Adding items to \"toolsBar\" ToolBar");
         toolsBar.getItems().addAll(
             selectToolButton,
             moveToolButton,
-            roomMenuButton);
+            roomMenuButton,
+            pathToolButton,
+            eraseToolButton,
+            doorToolButton);
         
         LOGGER.info("End of method");
         return toolsBar;
@@ -349,15 +398,45 @@ public class GuiController implements LogData {
         
         LOGGER.info("Creating \"Triangle\" MenuItem");
         MenuItem triangleMenuItem = new MenuItem("Triangle");
+        triangleMenuItem.setOnAction( e -> {
+            LOGGER.info("Start of method");
+            updateSelected("Triangle Tool");
+            updateMessage("Currently not implemented");
+            MapArea.add(
+                    new Polygon(
+                            new double[]{
+                                10.0, 10.0,
+                                30.0, 10.0,
+                                10.0, 30.0}));
+            LOGGER.info("End of method");
+        });
         
         LOGGER.info("Creating \"Rectangle\" MenuItem");
         MenuItem rectangleMenuItem = new MenuItem("Rectangle");
+        rectangleMenuItem.setOnAction( e -> {
+            LOGGER.info("Start of method");
+            updateSelected("Rectangle Tool");
+            updateMessage("Currently not implemented");
+            LOGGER.info("End of method");
+        });
         
         LOGGER.info("Creating \"Pentagon\" MenuItem");
         MenuItem pentagonMenuItem = new MenuItem("Pentagon");
+        pentagonMenuItem.setOnAction( e -> {
+            LOGGER.info("Start of method");
+            updateSelected("Pengtagon Tool");
+            updateMessage("Currently not implemented");
+            LOGGER.info("End of method");
+        });
         
         LOGGER.info("Creating \"Hexagon\" MenuItem");
         MenuItem hexagonMenuItem = new MenuItem("Hexagon");
+        hexagonMenuItem.setOnAction( e -> {
+            LOGGER.info("Start of method");
+            updateSelected("Hexagon Tool");
+            updateMessage("Currently not implemented");
+            LOGGER.info("End of method");
+        });
         
         roomMenuButton.getItems().addAll(
             lineMenuItem,

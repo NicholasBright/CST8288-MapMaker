@@ -68,13 +68,7 @@ public class MapMaker extends Application implements LogData {
         primaryStage.setTitle("CST8288 - Map Maker");
         
         LOGGER.info("Loading stylesheet");
-        
-        try {
-            rootScene.getStylesheets().add( ResourceLoader.getCSSUri("style.css"));
-        }
-        catch (FileNotFoundException e){
-            LOGGER.log(Level.WARNING, "CSS sheet couldn't be found", e);
-        }
+        loadStylesheet();
         
         LOGGER.info("Showing stage");
         primaryStage.show();
@@ -86,5 +80,20 @@ public class MapMaker extends Application implements LogData {
     public void initiateLogging(){
         LogData.initiateLogging(this.getClass().getSimpleName(), LOGGER);
         LOGGER.info("Logging started");
+    }
+    
+    public static void loadStylesheet(){
+        LOGGER.info("Start of method");
+        LOGGER.info("Clearing old sheets");
+        rootScene.getStylesheets().clear();
+        
+        LOGGER.info("Readding sheets");
+        try {
+            rootScene.getStylesheets().add( ResourceLoader.getCSSUri("style.css"));
+        }
+        catch (FileNotFoundException e){
+            LOGGER.log(Level.WARNING, "CSS sheet couldn't be found", e);
+        }
+        LOGGER.info("End of method");
     }
 }
