@@ -11,6 +11,7 @@
 }
 
 #StatusBar {
+        -fx-min-height: 20px;
         -fx-border-style-top: solid;
         -fx-border-width: 1px 0px 0px 0px;
         -fx-border-color: black;

@@ -19,6 +19,7 @@ public class MapArea {
     public static Pane initPane(){
         pane = new Pane();
         pane.setId("MapArea");
+        
         pane.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
             if(tool != null)
                 tool.mouseClicked(e);

@@ -24,6 +24,8 @@ public class SelectTool extends Tool {
     @Override
     public void mousePressed(MouseEvent e) {
         selectedArea = new Rectangle(e.getX(),e.getY(), 0, 10.0);
+        //This style is programatically set to stop the select area from breaking out of the pane
+        selectedArea.setStyle("-fx-stroke-type: inside;");
         selectedArea.setId("SelectionArea");
         startPoint = new Point2D(e.getX(), e.getY());
         target.getChildren().add(selectedArea);

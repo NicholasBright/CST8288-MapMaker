@@ -5,18 +5,13 @@
  */
 package mapmaker;
 
-import mapmaker.tool.Tool;
 import java.io.FileNotFoundException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.BoundingBox;
-import javafx.geometry.Bounds;
 import javafx.geometry.Orientation;
-import javafx.geometry.Point2D;
-import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -56,6 +51,9 @@ public class GuiController implements LogData {
         rootPane.setTop(createMenuBar());
         rootPane.setBottom(createStatusBar());
         rootPane.setLeft(createToolsBar());
+        ToolBar t = new ToolBar();
+        t.setOrientation(Orientation.VERTICAL);
+        rootPane.setRight(t);
         
         LOGGER.info("Adding Center \"MapArea\" Pane");
         rootPane.setCenter(MapArea.initPane());
