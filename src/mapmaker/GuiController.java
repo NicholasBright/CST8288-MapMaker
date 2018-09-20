@@ -28,6 +28,8 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Polygon;
+import mapmaker.mapelement.Room;
+import mapmaker.tool.CreateRoomTool;
 import mapmaker.tool.SelectTool;
 
 /**
@@ -245,6 +247,7 @@ public class GuiController implements LogData {
         Label selectedTitle = new Label("Selected: ");
         selectedTitle.setMinWidth(Label.USE_PREF_SIZE);
         Label selectedName = new Label("None");
+        //selectedName.textProperty().bind(MapArea.getTool().getNameProperty());
         selectedName.setId("NameOfSelectedTool");
         selectedName.setMinWidth(Label.USE_PREF_SIZE);
         
@@ -400,12 +403,7 @@ public class GuiController implements LogData {
             LOGGER.info("Start of method");
             updateSelected("Triangle Tool");
             updateMessage("Currently not implemented");
-            MapArea.add(
-                    new Polygon(
-                            new double[]{
-                                10.0, 10.0,
-                                30.0, 10.0,
-                                10.0, 30.0}));
+            MapArea.setTool(new CreateRoomTool(3, MapArea.getPane(), "Triangle Tool"));
             LOGGER.info("End of method");
         });
         

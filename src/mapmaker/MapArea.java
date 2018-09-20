@@ -1,19 +1,18 @@
 package mapmaker;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
 import mapmaker.tool.Tool;
-import javafx.event.EventType;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Shape;
+import mapmaker.mapelement.Room;
 
 /**
  *
  * @author owner
  */
 public class MapArea {
-    private static Pane pane;// = new Pane();
+    private static Pane pane;
+    private static ArrayList<Room> rooms;
     private static Tool tool;
     
     public static Pane initPane(){
@@ -48,7 +47,12 @@ public class MapArea {
         tool.setTarget(pane);
     }
     
-    public static void add(Shape n){
+    public static final Tool getTool(){
+        return tool;
+    }
+    
+    public static void add(Room n){
         pane.getChildren().add(n);
+        rooms.add(n);
     }
 }

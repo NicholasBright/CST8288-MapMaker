@@ -1,8 +1,7 @@
 package mapmaker.tool;
 
-import javafx.event.Event;
-import javafx.scene.Node;
-import javafx.scene.Parent;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringPropertyBase;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 
@@ -12,17 +11,27 @@ import javafx.scene.layout.Pane;
  */
 public abstract class Tool{
     protected Pane target;
+    protected SimpleStringProperty nameProperty;
     
-    public Tool(){
-        
+    protected Tool(){
     }
     
-    public Tool(Pane target){
+    public Tool(Pane target, String toolName){
         setTarget(target);
+        nameProperty = new SimpleStringProperty() {
+            @Override
+            public String getName() {
+                return toolName;
+            }
+        };
     }
     
     public void setTarget(Pane target){
         this.target = target;
+    }
+    
+    public final StringPropertyBase getNameProperty(){
+        return nameProperty;
     }
     
     public abstract void mousePressed (MouseEvent e);

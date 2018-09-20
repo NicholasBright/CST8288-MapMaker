@@ -17,10 +17,6 @@ public class SelectTool extends Tool {
     Point2D startPoint;
     Rectangle selectedArea;
     
-    /*public SelectTool(Parent p){
-        super(p);
-    }*/
-    
     @Override
     public void mousePressed(MouseEvent e) {
         selectedArea = new Rectangle(e.getX(),e.getY(), 0, 10.0);
@@ -39,6 +35,8 @@ public class SelectTool extends Tool {
     @Override
     public void mouseReleased(MouseEvent e) {
         target.getChildren().remove(selectedArea);
+        selectedArea = null;
+        startPoint = null;
     }
 
     @Override
