@@ -5,7 +5,13 @@
         -fx-border-color: black;
 }
 
+#SelectionArea {
+        -fx-stroke: black;
+        -fx-fill: rgba(0, 100, 200, 0.5);;
+}
+
 #StatusBar {
+        -fx-min-height: 20px;
         -fx-border-style-top: solid;
         -fx-border-width: 1px 0px 0px 0px;
         -fx-border-color: black;
@@ -44,7 +50,7 @@
 	-fx-background-color: gray ;
 }
 
-#Save-icon, #Credit-icon, #New-icon, #Info-icon, #Exit-icon, #Help-icon {
+#Save-icon, #CSS-icon, #Credit-icon, #New-icon, #Info-icon, #Exit-icon, #Help-icon {
 	-fx-min-height: 20px;
 	-fx-min-width: 20px;
 	-fx-background-color: transparent ;
@@ -54,6 +60,9 @@
 }
 #Save-icon {
 	-fx-background-image: url("../icons/20xp/save.png");
+}
+#CSS-icon {
+	-fx-background-image: url("../icons/20xp/css.png");
 }
 #Credit-icon {
 	-fx-background-image: url("../icons/20xp/open-book.png");
@@ -74,4 +83,18 @@
 /*hide arrow of MenuButton*/
 #Room > .arrow-button > .arrow {
     -fx-padding: 0;
+}
+
+.room {
+    -fx-fill: green;
+    -fx-stroke: black;
+}
+
+.control-point {
+    -fx-fill: white;
+    -fx-stroke: black;
+}
+
+.control-point:selected {
+    -fx-fill: yellow;
 }
