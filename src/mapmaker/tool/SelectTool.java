@@ -8,6 +8,7 @@ package mapmaker.tool;
 import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Rectangle;
+import mapmaker.MapArea;
 
 /**
  *
@@ -25,18 +26,44 @@ public class SelectTool extends Tool {
         selectedArea.setId("SelectionArea");
         startPoint = new Point2D(e.getX(), e.getY());
         target.getChildren().add(selectedArea);
+        MapArea.getRooms()
+            .stream()
+            .forEach((r) -> {
+                r.getControlPoints()
+                    .stream()
+                    .forEach( (cp) -> {
+                       cp.setSelected(false);
+                    });
+            });
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        return;
+        MapArea.getRooms()
+            .stream()
+            .filter((r) -> (r.contains(startPoint) && r.contains(new Point2D(e.getX(), e.getY()))) )
+            .forEach((r) -> {
+                r.getControlPoints()
+                    .stream()
+                    .forEach((cp) -> {
+                        cp.setSelected(true);
+                    });
+            });
+        target.getChildren().remove(selectedArea);
+        selectedArea = null;
+        startPoint = null;
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        target.getChildren().remove(selectedArea);
-        selectedArea = null;
-        startPoint = null;
+        MapArea.getRooms().forEach((r) -> {
+            r.getControlPoints()
+                .stream()
+                .filter((cp) -> (selectedArea.getBoundsInParent().intersects(cp.getBoundsInParent())))
+                .forEach((cp) -> {
+                    cp.setSelected(true);
+            });
+        });
     }
 
     @Override

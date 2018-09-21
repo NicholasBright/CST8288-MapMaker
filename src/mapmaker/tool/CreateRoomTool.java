@@ -4,6 +4,8 @@ import java.util.Arrays;
 import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import mapmaker.MapArea;
+import mapmaker.mapelement.ControlPoint;
 import mapmaker.mapelement.Room;
 
 /**
@@ -24,7 +26,7 @@ public class CreateRoomTool extends Tool {
     public void mousePressed(MouseEvent e) {
         startPoint = new Point2D(e.getX(), e.getY());
         createdRoom = new Room(sides, 1.0, startPoint);
-        target.getChildren().add(createdRoom);
+        MapArea.add(createdRoom);
     }
 
     @Override
@@ -38,28 +40,11 @@ public class CreateRoomTool extends Tool {
     }
 
     @Override
-    public void mouseDragged(MouseEvent e) {
-        /*double eX = e.getX();
-        double eY = e.getY();
-        
-        if(eX < target.getBoundsInLocal().getMinX())
-            eX = 0;
-        else if (eX > target.getBoundsInLocal().getMaxX())
-            eX = target.getBoundsInLocal().getWidth();
-        
-        if(eY < target.getBoundsInLocal().getMinY())
-            eY = 0;
-        else if (eY > target.getBoundsInLocal().getMaxY())
-            eY = target.getBoundsInLocal().getHeight();*/
-        
-        Point2D newEnd = new Point2D(e.getX(), e.getY());
+    public void mouseDragged(MouseEvent e) {Point2D newEnd = new Point2D(e.getX(), e.getY());
         Room newRoom = new Room(createdRoom.getNumSides(), createdRoom.getSideLength(), startPoint, newEnd);
-        Double newPoints[] = Arrays.copyOf(newRoom.getPoints().toArray(),newRoom.getPoints().toArray().length, Double[].class);
         boolean inBoundsFlag = true;
-        for(int i=0;i<newPoints.length;i++){
-            double x = newPoints[i];
-            double y = newPoints[++i];
-            if(! target.getBoundsInLocal().contains(x, y))
+        for(ControlPoint cp : newRoom.getControlPoints()){
+            if(! target.getBoundsInLocal().contains(cp.getBoundsInParent()))
                 inBoundsFlag = false;
         }
         if(inBoundsFlag)

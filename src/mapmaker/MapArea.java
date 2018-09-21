@@ -12,7 +12,7 @@ import mapmaker.mapelement.Room;
  */
 public class MapArea {
     private static Pane pane;
-    private static ArrayList<Room> rooms;
+    private static ArrayList<Room> rooms = new ArrayList<>();
     private static Tool tool;
     
     public static Pane initPane(){
@@ -52,7 +52,17 @@ public class MapArea {
     }
     
     public static void add(Room n){
-        pane.getChildren().add(n);
+        pane.getChildren().add(0, n);
+        pane.getChildren().addAll(n.getControlPoints());
         rooms.add(n);
+    }
+    
+    public static final ArrayList<Room> getRooms(){
+        return rooms;
+    }
+    
+    public static void reset(){
+        pane.getChildren().clear();
+        rooms.clear();
     }
 }

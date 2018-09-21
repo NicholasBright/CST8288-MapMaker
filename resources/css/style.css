@@ -84,3 +84,17 @@
 #Room > .arrow-button > .arrow {
     -fx-padding: 0;
 }
+
+.room {
+    -fx-fill: green;
+    -fx-stroke: black;
+}
+
+.control-point {
+    -fx-fill: white;
+    -fx-stroke: black;
+}
+
+.control-point:selected {
+    -fx-fill: yellow;
+}

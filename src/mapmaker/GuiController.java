@@ -85,7 +85,10 @@ public class GuiController implements LogData {
         Label newLabel = new Label();
         newLabel.setId("New-icon");
         MenuItem newMenuItem = new MenuItem("New", newLabel);
-        newMenuItem.setDisable(true);
+        newMenuItem.setOnAction(e -> {
+            MapArea.reset();
+        });
+        //newMenuItem.setDisable(true);
         newMenuItem.setId("New");
         
         LOGGER.info("Creating \"Save\" MenuItem");
@@ -394,6 +397,7 @@ public class GuiController implements LogData {
             LOGGER.info("Start of method");
             updateSelected("Line Tool");
             updateMessage("Currently not implemented");
+            MapArea.setTool(new CreateRoomTool(2, MapArea.getPane(), "Line Tool"));
             LOGGER.info("End of method");
         });
         
@@ -413,6 +417,7 @@ public class GuiController implements LogData {
             LOGGER.info("Start of method");
             updateSelected("Rectangle Tool");
             updateMessage("Currently not implemented");
+            MapArea.setTool(new CreateRoomTool(4, MapArea.getPane(), "Rectangle Tool"));
             LOGGER.info("End of method");
         });
         
@@ -422,6 +427,7 @@ public class GuiController implements LogData {
             LOGGER.info("Start of method");
             updateSelected("Pengtagon Tool");
             updateMessage("Currently not implemented");
+            MapArea.setTool(new CreateRoomTool(5, MapArea.getPane(), "Pentagon Tool"));
             LOGGER.info("End of method");
         });
         
@@ -431,6 +437,7 @@ public class GuiController implements LogData {
             LOGGER.info("Start of method");
             updateSelected("Hexagon Tool");
             updateMessage("Currently not implemented");
+            MapArea.setTool(new CreateRoomTool(6, MapArea.getPane(), "Hexagon Tool"));
             LOGGER.info("End of method");
         });
         
