@@ -16,20 +16,22 @@ import javafx.scene.shape.Circle;
  * @author owner
  */
 public class ControlPoint extends Circle {
+    Room owner;
     
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     
-    public ControlPoint (){
-        this(100.0,100.0);
+    public ControlPoint (Room owner){
+        this(owner, 100.0,100.0);
     }
     
-    public ControlPoint(Point2D pos){
-        this(pos.getX(), pos.getY());
+    public ControlPoint(Room owner, Point2D pos){
+        this(owner, pos.getX(), pos.getY());
     }
     
-    public ControlPoint(Double x, Double y){
+    public ControlPoint(Room owner, Double x, Double y){
         super(x, y, 3.5);
         this.getStyleClass().add("control-point");
+        this.owner = owner;
     }
     
     private final BooleanProperty selected = new BooleanPropertyBase(false) {
@@ -62,5 +64,16 @@ public class ControlPoint extends Circle {
     public void setPosition(Double x, Double y){
         setCenterX(x);
         setCenterY(y);
+        owner.updateShape();
+    }
+    
+    public void setX(double x){
+        super.setCenterX(x);
+        owner.updateShape();
+    }
+    
+    public void setY(double y){
+        super.setCenterY(y);
+        owner.updateShape();
     }
 }

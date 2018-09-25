@@ -58,7 +58,7 @@ public final class Room extends Polygon{
         if(controlPoints.size() > 0)
             controlPoints.get(0).setPosition(startPoints[0]);
         else
-            controlPoints.add(new ControlPoint(startPoints[0]));
+            controlPoints.add(new ControlPoint(this, startPoints[0]));
         points[0] = startPoints[0].getX();
         points[1] = startPoints[0].getY();
         if(startPoints.length > 1){
@@ -67,7 +67,7 @@ public final class Room extends Polygon{
             if(controlPoints.size() > 1)
                 controlPoints.get(1).setPosition(startPoints[1]);
             else
-                controlPoints.add(new ControlPoint(startPoints[1]));
+                controlPoints.add(new ControlPoint(this, startPoints[1]));
         }
         else {
             points[2] = startPoints[0].getX() + sideLength;
@@ -75,7 +75,7 @@ public final class Room extends Polygon{
             if(controlPoints.size() > 1)
                 controlPoints.get(1).setPosition(points[2], points[3]);
             else
-                controlPoints.add(new ControlPoint(points[2], points[3]));
+                controlPoints.add(new ControlPoint(this, points[2], points[3]));
         }
         
         Point2D beforeLast;
@@ -91,10 +91,19 @@ public final class Room extends Polygon{
             if(controlPoints.size() > i/2)
                 controlPoints.get(i/2).setPosition(points[i], points[++i]);
             else
-                controlPoints.add(new ControlPoint(points[i], points[++i]));
+                controlPoints.add(new ControlPoint(this, points[i], points[++i]));
         }
         
         super.getPoints().addAll(points);
+    }
+    
+    public void updateShape(){
+        super.getPoints().clear();
+        controlPoints
+            .stream()
+            .forEach( (cp) -> {
+                super.getPoints().addAll(cp.getCenterX(), cp.getCenterY());
+            });
     }
     
     public final ArrayList<ControlPoint> getControlPoints(){

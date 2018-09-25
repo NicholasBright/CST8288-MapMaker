@@ -9,6 +9,8 @@ import java.io.FileNotFoundException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
@@ -27,10 +29,12 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.shape.Polygon;
-import mapmaker.mapelement.Room;
 import mapmaker.tool.CreateRoomTool;
+import mapmaker.tool.EraseTool;
+import mapmaker.tool.MoveTool;
 import mapmaker.tool.SelectTool;
+import mapmaker.tool.Tool;
+import mapmaker.tool.ToolState;
 
 /**
  *
@@ -88,7 +92,6 @@ public class GuiController implements LogData {
         newMenuItem.setOnAction(e -> {
             MapArea.reset();
         });
-        //newMenuItem.setDisable(true);
         newMenuItem.setId("New");
         
         LOGGER.info("Creating \"Save\" MenuItem");
@@ -249,8 +252,11 @@ public class GuiController implements LogData {
         LOGGER.info("Creating \"Selected\" Label");
         Label selectedTitle = new Label("Selected: ");
         selectedTitle.setMinWidth(Label.USE_PREF_SIZE);
-        Label selectedName = new Label("None");
-        //selectedName.textProperty().bind(MapArea.getTool().getNameProperty());
+        Label selectedName = new Label();
+        ToolState.getToolState().getActiveToolProperty().addListener( (ObservableValue<? extends Tool> observable, Tool oldValue, Tool newValue) -> {
+            selectedName.setText(newValue.getNameProperty().get());
+        });
+        selectedName.setText(ToolState.getToolState().getActiveToolProperty().get().getNameProperty().get());
         selectedName.setId("NameOfSelectedTool");
         selectedName.setMinWidth(Label.USE_PREF_SIZE);
         
@@ -295,22 +301,6 @@ public class GuiController implements LogData {
         return statusBar;
     }
     
-    public static void updateSelected(String newName){
-        LOGGER.info("Start of method");
-        LOGGER.info("Updating \"SelectedText\"");
-        Label selectedName = (Label)statusBar.lookup("#NameOfSelectedTool");
-        selectedName.setText(newName);
-        LOGGER.info("End of method");
-    }
-    
-    public static void updateMessage(String newMessage){
-        LOGGER.info("Start of method");
-        LOGGER.info("Updating \"MessageText\"");
-        Label messageText = (Label)statusBar.lookup("#MessageText");
-        messageText.setText(newMessage);
-        LOGGER.info("End of method");
-    }
-    
     private static ToolBar createToolsBar(){
         LOGGER.info("Start of method");
         LOGGER.info("Creating \"toolsBar\" ToolBar");
@@ -323,9 +313,7 @@ public class GuiController implements LogData {
         selectToolButton.setId("Select");
         selectToolButton.setOnAction( e -> {
             LOGGER.info("Start of method");
-            updateSelected("Select");
-            updateMessage("Selects objects in the map");
-            MapArea.setTool(new SelectTool());
+            ToolState.getToolState().setActiveTool(SelectTool.getTool());
             LOGGER.info("End of method");
         });
         
@@ -334,8 +322,7 @@ public class GuiController implements LogData {
         moveToolButton.setId("Move");
         moveToolButton.setOnAction( e -> {
             LOGGER.info("Start of method");
-            updateSelected("Move");
-            updateMessage("Currently not implemented");
+            ToolState.getToolState().setActiveTool(MoveTool.getTool());
             LOGGER.info("End of method");
         });
         
@@ -347,8 +334,6 @@ public class GuiController implements LogData {
         pathToolButton.setId("Path");
         pathToolButton.setOnAction( e -> {
             LOGGER.info("Start of method");
-            updateSelected("Path");
-            updateMessage("Currently not implemented");
             LOGGER.info("End of method");
         });
         
@@ -357,8 +342,7 @@ public class GuiController implements LogData {
         eraseToolButton.setId("Erase");
         eraseToolButton.setOnAction( e -> {
             LOGGER.info("Start of method");
-            updateSelected("Erase");
-            updateMessage("Currently not implemented");
+            ToolState.getToolState().setActiveTool(EraseTool.getTool());
             LOGGER.info("End of method");
         });
         
@@ -367,8 +351,6 @@ public class GuiController implements LogData {
         doorToolButton.setId("Door");
         doorToolButton.setOnAction( e -> {
             LOGGER.info("Start of method");
-            updateSelected("Door");
-            updateMessage("Currently not implemented");
             LOGGER.info("End of method");
         });
         
@@ -395,9 +377,7 @@ public class GuiController implements LogData {
         MenuItem lineMenuItem = new MenuItem("Line");
         lineMenuItem.setOnAction( e -> {
             LOGGER.info("Start of method");
-            updateSelected("Line Tool");
-            updateMessage("Currently not implemented");
-            MapArea.setTool(new CreateRoomTool(2, MapArea.getPane(), "Line Tool"));
+            ToolState.getToolState().setActiveTool(CreateRoomTool.getTool(), 2);
             LOGGER.info("End of method");
         });
         
@@ -405,9 +385,7 @@ public class GuiController implements LogData {
         MenuItem triangleMenuItem = new MenuItem("Triangle");
         triangleMenuItem.setOnAction( e -> {
             LOGGER.info("Start of method");
-            updateSelected("Triangle Tool");
-            updateMessage("Currently not implemented");
-            MapArea.setTool(new CreateRoomTool(3, MapArea.getPane(), "Triangle Tool"));
+            ToolState.getToolState().setActiveTool(CreateRoomTool.getTool(), 3);
             LOGGER.info("End of method");
         });
         
@@ -415,9 +393,7 @@ public class GuiController implements LogData {
         MenuItem rectangleMenuItem = new MenuItem("Rectangle");
         rectangleMenuItem.setOnAction( e -> {
             LOGGER.info("Start of method");
-            updateSelected("Rectangle Tool");
-            updateMessage("Currently not implemented");
-            MapArea.setTool(new CreateRoomTool(4, MapArea.getPane(), "Rectangle Tool"));
+            ToolState.getToolState().setActiveTool(CreateRoomTool.getTool(), 4);
             LOGGER.info("End of method");
         });
         
@@ -425,9 +401,7 @@ public class GuiController implements LogData {
         MenuItem pentagonMenuItem = new MenuItem("Pentagon");
         pentagonMenuItem.setOnAction( e -> {
             LOGGER.info("Start of method");
-            updateSelected("Pengtagon Tool");
-            updateMessage("Currently not implemented");
-            MapArea.setTool(new CreateRoomTool(5, MapArea.getPane(), "Pentagon Tool"));
+            ToolState.getToolState().setActiveTool(CreateRoomTool.getTool(), 5);
             LOGGER.info("End of method");
         });
         
@@ -435,9 +409,7 @@ public class GuiController implements LogData {
         MenuItem hexagonMenuItem = new MenuItem("Hexagon");
         hexagonMenuItem.setOnAction( e -> {
             LOGGER.info("Start of method");
-            updateSelected("Hexagon Tool");
-            updateMessage("Currently not implemented");
-            MapArea.setTool(new CreateRoomTool(6, MapArea.getPane(), "Hexagon Tool"));
+            ToolState.getToolState().setActiveTool(CreateRoomTool.getTool(), 6);
             LOGGER.info("End of method");
         });
         
