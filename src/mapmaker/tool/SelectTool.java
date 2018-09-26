@@ -15,17 +15,25 @@ import mapmaker.MapArea;
  * @author owner
  */
 public class SelectTool extends Tool {
+    private static final SelectTool ST = new SelectTool();
+    
     Point2D startPoint;
     Rectangle selectedArea;
     
-    @Override
-    public void mousePressed(MouseEvent e) {
-        selectedArea = new Rectangle(e.getX(),e.getY(), 0, 10.0);
+    private SelectTool(){
+        super("Select Tool", "Click and drag to select Control Points, or click on a Room to select all of it's Control Points");
+        selectedArea = new Rectangle(0,0, 0, 10.0);
         //This style is programatically set to stop the select area from breaking out of the pane
         selectedArea.setStyle("-fx-stroke-type: inside;");
         selectedArea.setId("SelectionArea");
+    }
+    
+    @Override
+    public void mousePressed(MouseEvent e) {
+        selectedArea.setWidth(0);
         startPoint = new Point2D(e.getX(), e.getY());
-        target.getChildren().add(selectedArea);
+        if(!MapArea.getPane().getChildren().contains(selectedArea))
+            MapArea.getPane().getChildren().add(selectedArea);
         MapArea.getRooms()
             .stream()
             .forEach((r) -> {
@@ -49,9 +57,7 @@ public class SelectTool extends Tool {
                         cp.setSelected(true);
                     });
             });
-        target.getChildren().remove(selectedArea);
-        selectedArea = null;
-        startPoint = null;
+        MapArea.getPane().getChildren().remove(selectedArea);
     }
 
     @Override
@@ -71,10 +77,10 @@ public class SelectTool extends Tool {
         double eX = e.getX();
         double eY = e.getY();
         
-        if(eX < target.getBoundsInLocal().getMinX())
+        if(eX < MapArea.getPane().getBoundsInLocal().getMinX())
             eX = 0;
-        else if (eX > target.getBoundsInLocal().getMaxX())
-            eX = target.getBoundsInLocal().getWidth();
+        else if (eX > MapArea.getPane().getBoundsInLocal().getMaxX())
+            eX = MapArea.getPane().getBoundsInLocal().getWidth();
         
         if(eX >= startPoint.getX()){
             selectedArea.setX(startPoint.getX());
@@ -85,10 +91,10 @@ public class SelectTool extends Tool {
             selectedArea.setWidth(startPoint.getX()-eX);
         }
         
-        if(eY < target.getBoundsInLocal().getMinY())
+        if(eY < MapArea.getPane().getBoundsInLocal().getMinY())
             eY = 0;
-        else if (eY > target.getBoundsInLocal().getMaxY())
-            eY = target.getBoundsInLocal().getHeight();
+        else if (eY > MapArea.getPane().getBoundsInLocal().getMaxY())
+            eY = MapArea.getPane().getBoundsInLocal().getHeight();
         
         if(eY >= startPoint.getY()){
             selectedArea.setY(startPoint.getY());
@@ -100,4 +106,7 @@ public class SelectTool extends Tool {
         }
     }
     
+    public static Tool getTool(){
+        return ST;
+    }
 }

@@ -1,6 +1,9 @@
 package mapmaker.mapelement;
 
 import java.util.ArrayList;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.BooleanPropertyBase;
+import javafx.css.PseudoClass;
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Polygon;
 import javafx.scene.transform.Rotate;
@@ -14,6 +17,25 @@ public final class Room extends Polygon{
     double sideLength;
     Rotate rotation;
     ArrayList<ControlPoint> controlPoints = new ArrayList<>();
+    
+    private final BooleanProperty highlighted = new BooleanPropertyBase(false) {
+        @Override
+        public void invalidated() {
+            pseudoClassStateChanged(HIGHLIGHTED_PSEUDO_CLASS, get());
+        }
+        
+        @Override
+        public Object getBean() {
+            return Room.this;
+        }
+
+        @Override
+        public String getName() {
+            return "highlighted";
+        }
+    };
+            
+    private static PseudoClass HIGHLIGHTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("highlighted");
     
     public Room(int numSides, double sideLength, Point2D ... startPoints){
         rotation = new Rotate();
@@ -47,7 +69,7 @@ public final class Room extends Polygon{
     }
     
     public void updateShape(int numSides, double sideLength, Point2D ... startPoints){
-        if(numSides < 2) numSides = 2;
+        if(numSides < 1) numSides = 1;
         
         this.numSides = numSides;
         this.sideLength = sideLength;
@@ -58,7 +80,7 @@ public final class Room extends Polygon{
         if(controlPoints.size() > 0)
             controlPoints.get(0).setPosition(startPoints[0]);
         else
-            controlPoints.add(new ControlPoint(startPoints[0]));
+            controlPoints.add(new ControlPoint(this, startPoints[0]));
         points[0] = startPoints[0].getX();
         points[1] = startPoints[0].getY();
         if(startPoints.length > 1){
@@ -67,7 +89,7 @@ public final class Room extends Polygon{
             if(controlPoints.size() > 1)
                 controlPoints.get(1).setPosition(startPoints[1]);
             else
-                controlPoints.add(new ControlPoint(startPoints[1]));
+                controlPoints.add(new ControlPoint(this, startPoints[1]));
         }
         else {
             points[2] = startPoints[0].getX() + sideLength;
@@ -75,7 +97,7 @@ public final class Room extends Polygon{
             if(controlPoints.size() > 1)
                 controlPoints.get(1).setPosition(points[2], points[3]);
             else
-                controlPoints.add(new ControlPoint(points[2], points[3]));
+                controlPoints.add(new ControlPoint(this, points[2], points[3]));
         }
         
         Point2D beforeLast;
@@ -91,13 +113,30 @@ public final class Room extends Polygon{
             if(controlPoints.size() > i/2)
                 controlPoints.get(i/2).setPosition(points[i], points[++i]);
             else
-                controlPoints.add(new ControlPoint(points[i], points[++i]));
+                controlPoints.add(new ControlPoint(this, points[i], points[++i]));
         }
         
         super.getPoints().addAll(points);
     }
     
+    public void updateShape(){
+        super.getPoints().clear();
+        controlPoints
+            .stream()
+            .forEach( (cp) -> {
+                super.getPoints().addAll(cp.getCenterX(), cp.getCenterY());
+            });
+    }
+    
     public final ArrayList<ControlPoint> getControlPoints(){
         return controlPoints;
+    }
+    
+    public boolean isHighlighted(){
+        return this.highlighted.get();
+    }
+    
+    public void setHighlighted(boolean highlighted){
+        this.highlighted.set(highlighted);
     }
 }
