@@ -6,11 +6,15 @@
 package mapmaker;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
@@ -18,6 +22,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuButton;
@@ -29,6 +34,9 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import mapmaker.mapelement.Room;
 import mapmaker.tool.CreateRoomTool;
 import mapmaker.tool.EraseTool;
 import mapmaker.tool.MoveTool;
@@ -41,10 +49,11 @@ import mapmaker.tool.ToolState;
  * @author owner
  */
 public class GuiController implements LogData {
-    static BorderPane rootPane;
-    private static MenuBar menuBar;
-    private static ToolBar statusBar;
-    private static ToolBar toolsBar;
+    private static BorderPane rootPane;
+    private static MenuBar    menuBar;
+    private static ToolBar    statusBar;
+    private static ToolBar    toolsBar;
+    private static VBox       detailsBox;
     
     private static final Logger LOGGER = Logger.getLogger(GuiController.class.getSimpleName());
     
@@ -57,9 +66,7 @@ public class GuiController implements LogData {
         rootPane.setTop(createMenuBar());
         rootPane.setBottom(createStatusBar());
         rootPane.setLeft(createToolsBar());
-        ToolBar t = new ToolBar();
-        t.setOrientation(Orientation.VERTICAL);
-        rootPane.setRight(t);
+        rootPane.setRight(createDetailsBox());
         
         LOGGER.info("Adding Center \"MapArea\" Pane");
         rootPane.setCenter(MapArea.initPane());
@@ -423,6 +430,81 @@ public class GuiController implements LogData {
         
         LOGGER.info("End of method");
         return roomMenuButton;
+    }
+    
+    private static VBox createDetailsBox(){
+        detailsBox = new VBox();
+        detailsBox.prefHeightProperty().bind(rootPane.heightProperty());
+        detailsBox.prefWidthProperty().bind(rootPane.widthProperty().divide(5.0));
+        
+        ObservableList<Label> roomList = FXCollections.observableArrayList();
+        ListView<Label> roomListView = new ListView<Label>(roomList);
+        roomListView.setId("RoomList");
+        
+        roomListView.prefHeightProperty().bind(detailsBox.heightProperty().multiply(0.5));
+        roomListView.prefWidthProperty().bind(detailsBox.widthProperty());
+        
+        MapArea.getRooms().addListener((Change<? extends Room> c) -> {
+            while(c.next()){
+                c.getAddedSubList()
+                 .stream()
+                 .forEach( r -> {
+                    String polyName;
+                    switch(r.getNumSides()){
+                        case 2:
+                            polyName = "Line";
+                            break;
+                        case 3: 
+                            polyName = "Triangle";
+                            break;
+                        case 4:
+                            polyName = "Rectangle";
+                            break;
+                        case 5:
+                            polyName = "Pentagon";
+                            break;
+                        case 6:
+                            polyName = "Hexagon";
+                            break;
+                        default:
+                            polyName = "Polygon";
+                            break;
+                    }
+                    Label newRoomLabel = new Label(polyName);
+                    newRoomLabel.setUserData(r);
+                    newRoomLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> {
+                        ((Room) newRoomLabel.getUserData()).setHighlighted(true);
+                    });
+                    newRoomLabel.addEventHandler(MouseEvent.MOUSE_EXITED, e -> {
+                        ((Room) newRoomLabel.getUserData()).setHighlighted(false);
+                    });
+                    roomList.add(newRoomLabel);
+                });
+                ArrayList<Label> toDel = new ArrayList<>();
+                c.getRemoved()
+                 .stream()
+                 .forEach( r -> {
+                    roomList.stream()
+                        .filter( (l) -> (l instanceof Label))
+                        .forEach( l -> {
+                            Label label = (Label) l;
+                            if(label.getUserData() == r){
+                                toDel.add(l);
+                            }
+                        });
+                });
+                roomList.removeAll(toDel);
+            }
+        });
+        
+        GridPane detailsPane = new GridPane();
+        detailsPane.setId("Details");
+        detailsPane.prefHeightProperty().bind(detailsBox.heightProperty().multiply(0.5));
+        detailsPane.prefWidthProperty().bind(detailsBox.widthProperty());
+        
+        detailsBox.getChildren().addAll(roomListView, detailsPane);
+        
+        return detailsBox;
     }
     
     @Override

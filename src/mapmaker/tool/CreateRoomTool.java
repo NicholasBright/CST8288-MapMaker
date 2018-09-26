@@ -19,7 +19,7 @@ public final class CreateRoomTool extends Tool {
     
     private CreateRoomTool (){
         super("Room Tool", "Creates rooms");
-        this.sides = 2;
+        //this.sides = 2;
         t = CRT;
     }
     

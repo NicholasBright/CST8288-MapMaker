@@ -2,6 +2,8 @@ package mapmaker;
 
 import java.util.ArrayList;
 import java.util.List;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import mapmaker.mapelement.Room;
@@ -15,7 +17,7 @@ public class MapArea {
     private static final ToolState TS = ToolState.getToolState();
     
     private static Pane pane;
-    private static ArrayList<Room> rooms = new ArrayList<>();
+    private static ObservableList<Room> rooms = FXCollections.observableArrayList();
     
     public static Pane initPane(){
         pane = new Pane();
@@ -50,7 +52,7 @@ public class MapArea {
         rooms.add(n);
     }
     
-    public static final ArrayList<Room> getRooms(){
+    public static final ObservableList<Room> getRooms(){
         return rooms;
     }
     

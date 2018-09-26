@@ -1,6 +1,9 @@
 package mapmaker.mapelement;
 
 import java.util.ArrayList;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.BooleanPropertyBase;
+import javafx.css.PseudoClass;
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Polygon;
 import javafx.scene.transform.Rotate;
@@ -14,6 +17,25 @@ public final class Room extends Polygon{
     double sideLength;
     Rotate rotation;
     ArrayList<ControlPoint> controlPoints = new ArrayList<>();
+    
+    private final BooleanProperty highlighted = new BooleanPropertyBase(false) {
+        @Override
+        public void invalidated() {
+            pseudoClassStateChanged(HIGHLIGHTED_PSEUDO_CLASS, get());
+        }
+        
+        @Override
+        public Object getBean() {
+            return Room.this;
+        }
+
+        @Override
+        public String getName() {
+            return "highlighted";
+        }
+    };
+            
+    private static PseudoClass HIGHLIGHTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("highlighted");
     
     public Room(int numSides, double sideLength, Point2D ... startPoints){
         rotation = new Rotate();
@@ -47,7 +69,7 @@ public final class Room extends Polygon{
     }
     
     public void updateShape(int numSides, double sideLength, Point2D ... startPoints){
-        if(numSides < 2) numSides = 2;
+        if(numSides < 1) numSides = 1;
         
         this.numSides = numSides;
         this.sideLength = sideLength;
@@ -108,5 +130,13 @@ public final class Room extends Polygon{
     
     public final ArrayList<ControlPoint> getControlPoints(){
         return controlPoints;
+    }
+    
+    public boolean isHighlighted(){
+        return this.highlighted.get();
+    }
+    
+    public void setHighlighted(boolean highlighted){
+        this.highlighted.set(highlighted);
     }
 }

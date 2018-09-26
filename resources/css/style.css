@@ -1,100 +1,119 @@
 #ToolBar {
-	-fx-min-width: 50px;
-        -fx-border-style-top: solid;
-        -fx-border-width: 0px 1px 0px 0px;
-        -fx-border-color: black;
+    -fx-min-width:              50px;
+    -fx-border-style-top:       solid;
+    -fx-border-width:           0px 1px 0px 0px;
+    -fx-border-color:           black;
 }
 
 #SelectionArea {
-        -fx-stroke: black;
-        -fx-fill: rgba(0, 100, 200, 0.5);;
+    -fx-stroke: black;
+    -fx-fill:   rgba(0, 100, 200, 0.5);
 }
 
 #StatusBar {
-        -fx-min-height: 20px;
-        -fx-border-style-top: solid;
-        -fx-border-width: 1px 0px 0px 0px;
-        -fx-border-color: black;
+    -fx-min-height:             20px;
+    -fx-border-style-top:       solid;
+    -fx-border-width:           1px 0px 0px 0px;
+    -fx-border-color:           black;
 }
 
 #Room, #Erase, #Path, #Door, #Move, #Select {
-	-fx-min-height: 40px;
-	-fx-min-width: 40px;
-	-fx-background-color: transparent ;
-	-fx-background-size: contain ;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: center;
+    -fx-min-height:             40px;
+    -fx-min-width:              40px;
+    -fx-background-color:       transparent ;
+    -fx-background-size:        contain ;
+    -fx-background-repeat:      no-repeat;
+    -fx-background-position:    center;
 }
 #Room {
-	-fx-background-image: url("../icons/40xp/plans.png");
+    -fx-background-image:       url("../icons/40xp/plans.png");
 }
 #Select {
-	-fx-background-image: url("../icons/40xp/cursor.png");
+    -fx-background-image:       url("../icons/40xp/cursor.png");
 }
 #Move {
-	-fx-background-image: url("../icons/40xp/move.png");
+    -fx-background-image:       url("../icons/40xp/move.png");
 }
 #Erase {
-	-fx-background-image: url("../icons/40xp/eraser.png");
+    -fx-background-image:       url("../icons/40xp/eraser.png");
 }
 #Path {
-	-fx-background-image: url("../icons/40xp/road.png");
+    -fx-background-image:       url("../icons/40xp/road.png");
 }
 #Door {
-	-fx-background-image: url("../icons/40xp/doorway.png");
+    -fx-background-image:       url("../icons/40xp/doorway.png");
 }
 #Room:hover, #Erase:hover, #Path:hover, #Door:hover, #Move:hover, #Select:hover {
-	-fx-background-color: lightgray ;
+    -fx-background-color:       lightgray ;
 }
 #Room:pressed, #Erase:pressed, #Path:pressed, #Door:pressed, #Move:pressed, #Select:pressed {
-	-fx-background-color: gray ;
+    -fx-background-color:       gray ;
 }
 
 #Save-icon, #CSS-icon, #Credit-icon, #New-icon, #Info-icon, #Exit-icon, #Help-icon {
-	-fx-min-height: 20px;
-	-fx-min-width: 20px;
-	-fx-background-color: transparent ;
-	-fx-background-size: contain ;
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: center;
+    -fx-min-height:             20px;
+    -fx-min-width:              20px;
+    -fx-background-color:       transparent ;
+    -fx-background-size:        contain ;
+    -fx-background-repeat:      no-repeat;
+    -fx-background-position:    center;
 }
 #Save-icon {
-	-fx-background-image: url("../icons/20xp/save.png");
+    -fx-background-image:       url("../icons/20xp/save.png");
 }
 #CSS-icon {
-	-fx-background-image: url("../icons/20xp/css.png");
+    -fx-background-image:       url("../icons/20xp/css.png");
 }
 #Credit-icon {
-	-fx-background-image: url("../icons/20xp/open-book.png");
+    -fx-background-image:       url("../icons/20xp/open-book.png");
 }
 #New-icon {
-	-fx-background-image: url("../icons/20xp/new-file.png");
+    -fx-background-image:       url("../icons/20xp/new-file.png");
 }
 #Exit-icon {
-	-fx-background-image: url("../icons/20xp/exit.png");
+    -fx-background-image:       url("../icons/20xp/exit.png");
 }
 #Info-icon {
-	-fx-background-image: url("../icons/20xp/information.png");
+    -fx-background-image:       url("../icons/20xp/information.png");
 }
 #Help-icon {
-	-fx-background-image: url("../icons/20xp/question.png");
+    -fx-background-image:       url("../icons/20xp/question.png");
 }
 
 /*hide arrow of MenuButton*/
 #Room > .arrow-button > .arrow {
-    -fx-padding: 0;
+    -fx-padding:                0;
 }
 
 .room {
-    -fx-fill: green;
-    -fx-stroke: black;
+    -fx-fill:                   green;
+    -fx-stroke:                 black;
+}
+
+.room:highlighted {
+    -fx-fill:                   gold;
+    -fx-stroke:                 red;
+    -fx-stroke-dash-array:      25 25;
 }
 
 .control-point {
-    -fx-fill: white;
-    -fx-stroke: black;
+    -fx-fill:                   white;
+    -fx-stroke:                 black;
 }
 
 .control-point:selected {
-    -fx-fill: yellow;
+    -fx-fill:                   yellow;
+}
+
+#RoomList {
+    -fx-background-color:       white;
+    -fx-border-style-top:       solid;
+    -fx-border-width:           0px 0px 1px 1px;
+    -fx-border-color:           black;
+}
+
+#Details {
+    -fx-border-style-top:       solid;
+    -fx-border-width:           0px 0px 0px 1px;
+    -fx-border-color:           black;
 }
