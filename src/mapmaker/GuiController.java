@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -48,51 +47,37 @@ import mapmaker.tool.ToolState;
  *
  * @author owner
  */
-public class GuiController implements LogData {
+public class GuiController{
     private static BorderPane rootPane;
     private static MenuBar    menuBar;
     private static ToolBar    statusBar;
     private static ToolBar    toolsBar;
     private static VBox       detailsBox;
     
-    private static final Logger LOGGER = Logger.getLogger(GuiController.class.getSimpleName());
-    
     public static BorderPane createRootPane(){
-        LOGGER.info("Start of method");
-        LOGGER.info("Creating rootPane");
         rootPane = new BorderPane();
         
-        LOGGER.info("Populating rootPane");
         rootPane.setTop(createMenuBar());
         rootPane.setBottom(createStatusBar());
         rootPane.setLeft(createToolsBar());
         rootPane.setRight(createDetailsBox());
         
-        LOGGER.info("Adding Center \"MapArea\" Pane");
         rootPane.setCenter(MapArea.initPane());
         
-        LOGGER.info("End of method");
         return rootPane;
     }
     
     private static MenuBar createMenuBar(){
-        LOGGER.info("Start of method");
-        LOGGER.info("Creating menuBar");
         menuBar = new MenuBar();
         menuBar.setId("MenuBar");
-        LOGGER.info("Populating menuBar");
         menuBar.getMenus().addAll(createFileMenu(),createHelpMenu());
-        LOGGER.info("End of method");
         return menuBar;
     }
     
     private static Menu createFileMenu(){
-        LOGGER.info("Start of method");
-        LOGGER.info("Creating fileMenu");
         Menu fileMenu = new Menu("File");
         fileMenu.setId("FileMenu");
         
-        LOGGER.info("Creating \"New\" MenuItem");
         Label newLabel = new Label();
         newLabel.setId("New-icon");
         MenuItem newMenuItem = new MenuItem("New", newLabel);
@@ -101,52 +86,42 @@ public class GuiController implements LogData {
         });
         newMenuItem.setId("New");
         
-        LOGGER.info("Creating \"Save\" MenuItem");
         Label saveLabel = new Label();
         saveLabel.setId("Save-icon");
         MenuItem saveMenuItem = new MenuItem("Save", saveLabel);
         saveMenuItem.setDisable(true);
         saveMenuItem.setId("Save");
         
-        LOGGER.info("Creating \"Reload Style\" MenuItem");
         Label reloadStyleLabel = new Label();
         reloadStyleLabel.setId("CSS-icon");
         MenuItem reloadStyleMenuItem = new MenuItem("Reload Style", reloadStyleLabel);
         reloadStyleMenuItem.setOnAction(e -> {
-            MapMaker.loadStylesheet();
+            //MapMaker.loadStylesheet();
         });
         
-        LOGGER.info("Creating SeparatorMenuItem");
         SeparatorMenuItem separatorMenuItem = new SeparatorMenuItem();
         
-        LOGGER.info("Creating \"Exit\" MenuItem");
         Label exitLabel = new Label();
         exitLabel.setId("Exit-icon");
         MenuItem exitMenuItem = new MenuItem("Exit", exitLabel);
         exitMenuItem.setOnAction( e -> {
-            LOGGER.info("Start and end of method");
             Platform.exit();
         });
         exitMenuItem.setId("Exit");
         
-        LOGGER.info("Adding items to fileMenu");
         fileMenu.getItems().addAll(newMenuItem, 
             saveMenuItem,
             reloadStyleMenuItem,
             separatorMenuItem,
             exitMenuItem);
         
-        LOGGER.info("End of method");
         return fileMenu;
     }
     
     private static Menu createHelpMenu(){
-        LOGGER.info("Start of method");
-        LOGGER.info("Creating helpMenu");
         Menu helpMenu = new Menu("Help");
         helpMenu.setId("HelpMenu");
         
-        LOGGER.info("Creating \"Credit\" MenuItem");
         Label creditLabel = new Label();
         creditLabel.setId("Credit-icon");
         MenuItem creditMenuItem = new MenuItem("Credit", creditLabel);
@@ -155,29 +130,23 @@ public class GuiController implements LogData {
             
             @Override
             public void handle(ActionEvent e) {
-                LOGGER.info("Start of method");
                 if(alert == null){
-                    LOGGER.info("Creating new \"Credit\" Alert");
                     alert = new Alert(AlertType.INFORMATION);
                     alert.setTitle("Credits");
                     alert.setHeaderText("Credits");
                     try {
                         alert.setContentText( ResourceLoader.loadTxtToString("credits.txt") );
                     } catch (FileNotFoundException ex) {
-                        LOGGER.log(Level.SEVERE, ex.toString(), ex);
                         alert.setContentText( "Credits file not found. Report error to developer." );
                         alert.showAndWait();
                         alert = null;
-                        LOGGER.info("End of method");
                         return;
                     }
                 }
-                LOGGER.info("End of Method");
                 alert.showAndWait();
             }
         });
         
-        LOGGER.info("Creating \"Info\" MenuItem");
         Label infoLabel = new Label();
         infoLabel.setId("Info-icon");
         MenuItem infoMenuItem = new MenuItem("Info", infoLabel);
@@ -185,32 +154,25 @@ public class GuiController implements LogData {
             Alert alert = null;
             @Override
             public void handle(ActionEvent e) {
-                LOGGER.info("Start of method");
                 if(alert == null){
-                    LOGGER.info("Creating new \"Info\" Alert");
                     alert = new Alert(AlertType.INFORMATION);
                     alert.setTitle("Info");
                     alert.setHeaderText("Info");
                     try {
                         alert.setContentText( ResourceLoader.loadTxtToString("info.txt") );
                     } catch (FileNotFoundException ex) {
-                        LOGGER.log(Level.SEVERE, ex.toString(), ex);
                         alert.setContentText( "Info file not found. Report error to developer." );
                         alert.showAndWait();
                         alert = null;
-                        LOGGER.info("End of method");
                         return;
                     }
                 }
-                LOGGER.info("End of method");
                 alert.showAndWait();
             }
         });
         
-        LOGGER.info("Creating SeparatorMenuItem");
         SeparatorMenuItem separatorMenuItem = new SeparatorMenuItem();
         
-        LOGGER.info("Creating \"Help\" MenuItem");
         Label helpLabel = new Label();
         helpLabel.setId("Help-icon");
         MenuItem helpMenuItem = new MenuItem("Help", helpLabel);
@@ -218,7 +180,6 @@ public class GuiController implements LogData {
             Alert alert = null;
             @Override
             public void handle(ActionEvent e) {
-                LOGGER.info("Start of method");
                 if(alert == null){
                     alert = new Alert(AlertType.INFORMATION);
                     alert.setTitle("Help");
@@ -226,37 +187,30 @@ public class GuiController implements LogData {
                     try {
                         alert.setContentText( ResourceLoader.loadTxtToString("help.txt") );
                     } catch (FileNotFoundException ex) {
-                        LOGGER.log(Level.SEVERE, ex.toString(), ex);
+                        Logger.getLogger(GuiController.class.getSimpleName()).log(Level.SEVERE, ex.toString(), ex);
                         alert.setContentText( "Help file not found. Report error to developer." );
                         alert.showAndWait();
                         alert = null;
-                        LOGGER.info("End of method");
                         return;
                     }
                 }
-                LOGGER.info("End of method");
                 alert.showAndWait();
             }
         });
         
-        LOGGER.info("Adding items to \"Help\" Menu");
         helpMenu.getItems().addAll(
             creditMenuItem,
             infoMenuItem,
             separatorMenuItem, 
             helpMenuItem);
         
-        LOGGER.info("End of method");
         return helpMenu;
     }
     
     private static ToolBar createStatusBar(){
-        LOGGER.info("Start of method");
-        LOGGER.info("Creating \"statusBar\" ToolBar");
         statusBar = new ToolBar();
         statusBar.setId("StatusBar");
         
-        LOGGER.info("Creating \"Selected\" Label");
         Label selectedTitle = new Label("Selected: ");
         selectedTitle.setMinWidth(Label.USE_PREF_SIZE);
         Label selectedName = new Label();
@@ -267,7 +221,6 @@ public class GuiController implements LogData {
         selectedName.setId("NameOfSelectedTool");
         selectedName.setMinWidth(Label.USE_PREF_SIZE);
         
-        LOGGER.info("Creating \"Message\" Label");
         Label messageText = new Label("");
         messageText.setId("MessageText");
         messageText.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
@@ -275,16 +228,13 @@ public class GuiController implements LogData {
             
             @Override
             public void handle(MouseEvent e) {
-                LOGGER.info("Start of method");
                 if(alert == null){
-                    LOGGER.info("Creating \"MessageText\" Alert");
                     alert = new Alert(AlertType.INFORMATION);
                     alert.setTitle("Message Alert");
                     alert.setHeaderText("Message");
                     alert.setContentText(messageText.getText());
                 }
                 alert.showAndWait();
-                LOGGER.info("End of Method");
             }
         });
         messageText.setTextOverrun(OverrunStyle.ELLIPSIS);
@@ -296,7 +246,6 @@ public class GuiController implements LogData {
         Label messageTitle = new Label("Message: ");
         messageTitle.setMinWidth(Label.USE_PREF_SIZE);
         
-        LOGGER.info("Adding items to \"statusBar\" ToolBar");
         statusBar.getItems().addAll(
             selectedTitle,
             selectedName,
@@ -304,64 +253,44 @@ public class GuiController implements LogData {
             messageTitle,
             messageText);
         
-        LOGGER.info("End of method");
         return statusBar;
     }
     
     private static ToolBar createToolsBar(){
-        LOGGER.info("Start of method");
-        LOGGER.info("Creating \"toolsBar\" ToolBar");
         toolsBar = new ToolBar();
         toolsBar.setOrientation(Orientation.VERTICAL);
         toolsBar.setId("ToolBar");
         
-        LOGGER.info("Creating \"Select\" Button");
         Button selectToolButton = new Button();
         selectToolButton.setId("Select");
         selectToolButton.setOnAction( e -> {
-            LOGGER.info("Start of method");
             ToolState.getToolState().setActiveTool(SelectTool.getTool());
-            LOGGER.info("End of method");
         });
         
-        LOGGER.info("Creating \"Move\" Button");
         Button moveToolButton = new Button();
         moveToolButton.setId("Move");
         moveToolButton.setOnAction( e -> {
-            LOGGER.info("Start of method");
             ToolState.getToolState().setActiveTool(MoveTool.getTool());
-            LOGGER.info("End of method");
         });
         
-        LOGGER.info("Creating \"Room\" MenuButton");
         MenuButton roomMenuButton = createRoomMenuButton();
         
-        LOGGER.info("Creating \"Path\" Button");
         Button pathToolButton = new Button();
         pathToolButton.setId("Path");
         pathToolButton.setOnAction( e -> {
-            LOGGER.info("Start of method");
-            LOGGER.info("End of method");
         });
         
-        LOGGER.info("Creating \"Erase\" Button");
         Button eraseToolButton = new Button();
         eraseToolButton.setId("Erase");
         eraseToolButton.setOnAction( e -> {
-            LOGGER.info("Start of method");
             ToolState.getToolState().setActiveTool(EraseTool.getTool());
-            LOGGER.info("End of method");
         });
         
-        LOGGER.info("Creating \"Door\" Button");
         Button doorToolButton = new Button();
         doorToolButton.setId("Door");
         doorToolButton.setOnAction( e -> {
-            LOGGER.info("Start of method");
-            LOGGER.info("End of method");
         });
         
-        LOGGER.info("Adding items to \"toolsBar\" ToolBar");
         toolsBar.getItems().addAll(
             selectToolButton,
             moveToolButton,
@@ -370,54 +299,36 @@ public class GuiController implements LogData {
             eraseToolButton,
             doorToolButton);
         
-        LOGGER.info("End of method");
         return toolsBar;
     }
     
     private static MenuButton createRoomMenuButton(){
-        LOGGER.info("Start of method");
-        LOGGER.info("Creainng \"Room\" MenuButton");
         MenuButton roomMenuButton = new MenuButton();
         roomMenuButton.setId("Room");
         
-        LOGGER.info("Creating \"Line\" MenuItem");
         MenuItem lineMenuItem = new MenuItem("Line");
         lineMenuItem.setOnAction( e -> {
-            LOGGER.info("Start of method");
             ToolState.getToolState().setActiveTool(CreateRoomTool.getTool(), 2);
-            LOGGER.info("End of method");
         });
         
-        LOGGER.info("Creating \"Triangle\" MenuItem");
         MenuItem triangleMenuItem = new MenuItem("Triangle");
         triangleMenuItem.setOnAction( e -> {
-            LOGGER.info("Start of method");
             ToolState.getToolState().setActiveTool(CreateRoomTool.getTool(), 3);
-            LOGGER.info("End of method");
         });
         
-        LOGGER.info("Creating \"Rectangle\" MenuItem");
         MenuItem rectangleMenuItem = new MenuItem("Rectangle");
         rectangleMenuItem.setOnAction( e -> {
-            LOGGER.info("Start of method");
             ToolState.getToolState().setActiveTool(CreateRoomTool.getTool(), 4);
-            LOGGER.info("End of method");
         });
         
-        LOGGER.info("Creating \"Pentagon\" MenuItem");
         MenuItem pentagonMenuItem = new MenuItem("Pentagon");
         pentagonMenuItem.setOnAction( e -> {
-            LOGGER.info("Start of method");
             ToolState.getToolState().setActiveTool(CreateRoomTool.getTool(), 5);
-            LOGGER.info("End of method");
         });
         
-        LOGGER.info("Creating \"Hexagon\" MenuItem");
         MenuItem hexagonMenuItem = new MenuItem("Hexagon");
         hexagonMenuItem.setOnAction( e -> {
-            LOGGER.info("Start of method");
             ToolState.getToolState().setActiveTool(CreateRoomTool.getTool(), 6);
-            LOGGER.info("End of method");
         });
         
         roomMenuButton.getItems().addAll(
@@ -428,7 +339,6 @@ public class GuiController implements LogData {
             hexagonMenuItem
             );
         
-        LOGGER.info("End of method");
         return roomMenuButton;
     }
     
@@ -505,11 +415,5 @@ public class GuiController implements LogData {
         detailsBox.getChildren().addAll(roomListView, detailsPane);
         
         return detailsBox;
-    }
-    
-    @Override
-    public void initiateLogging(){
-        LogData.initiateLogging(this.getClass().getSimpleName(), LOGGER);
-        LOGGER.info("Logging started");
     }
 }

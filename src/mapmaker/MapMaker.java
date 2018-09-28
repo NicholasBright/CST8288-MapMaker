@@ -9,91 +9,106 @@ import java.io.FileNotFoundException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ToolBar;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
  *
  * @author owner
  */
-public class MapMaker extends Application implements LogData {
-    static Scene rootScene;
-    static boolean logging = false;
-    static boolean allLogging = false;
-    private static final Logger LOGGER = Logger.getLogger(MapMaker.class.getName());
+public class MapMaker extends Application {
+    private Scene       rootScene;
+    private BorderPane  rootPane;
+    private MenuBar     menuBar;
+    private ToolBar     statusBar;
+    private ToolBar     toolsBar;
+    private VBox        detailsBox;
     
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        int iter = 0;
-        for(String arg: args){
-            if(arg.startsWith("-") && arg.length() > 1){
-                for(char c : arg.substring(1).toCharArray()){
-                    switch(c){
-                        case 'l':
-                            logging = true;
-                            break;
-                        case 'a':
-                            allLogging = true;
-                            break;
-                        case 'L':
-                            logging = allLogging = true;
-                            break;
-                    }
-                }
-            }
-        }
-        
-        new MapMaker().initiateLogging();
-        new GuiController().initiateLogging();
-        new ResourceLoader().initiateLogging();
-        
-        LOGGER.log(Level.INFO,"Launching app");
-        
         launch(args);
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        LOGGER.info("Start of method");
+        rootPane = new BorderPane();
+        rootScene = new Scene(rootPane, 800, 600);
         
-        LOGGER.info("Creating scene");
-        rootScene = new Scene(GuiController.createRootPane(), 800, 600);
+        rootPane.setTop(createMenuBar(
+            createMenu("File",
+                createMenuItem("New", (e) ->{
+                    MapArea.reset();
+                }),
+                createMenuItem("Exit", (e) -> {
+                    Platform.exit();
+                })
+            )
+        ));
+        rootPane.setBottom(createToolBar());
+        rootPane.setLeft(createToolBar());
+        //rootPane.setRight(createDetailsBox());
         
-        LOGGER.info("Setting stage properties");
+        rootPane.setCenter(MapArea.initPane());
         primaryStage.setScene(rootScene);
         primaryStage.setMinWidth(600);
         primaryStage.setMinHeight(400);
         primaryStage.setTitle("CST8288 - Map Maker");
         
-        LOGGER.info("Loading stylesheet");
         loadStylesheet();
         
-        LOGGER.info("Showing stage");
         primaryStage.show();
-        LOGGER.info("End of method");
     }
     
-    
-    @Override
-    public void initiateLogging(){
-        LogData.initiateLogging(this.getClass().getSimpleName(), LOGGER);
-        LOGGER.info("Logging started");
-    }
-    
-    public static void loadStylesheet(){
-        LOGGER.info("Start of method");
-        LOGGER.info("Clearing old sheets");
+    public void loadStylesheet(){
         rootScene.getStylesheets().clear();
         
-        LOGGER.info("Readding sheets");
         try {
             rootScene.getStylesheets().add( ResourceLoader.getCSSUri("style.css"));
         }
         catch (FileNotFoundException e){
-            LOGGER.log(Level.WARNING, "CSS sheet couldn't be found", e);
+            Logger.getLogger(MapMaker.class.getSimpleName()).log(Level.SEVERE, e.toString(), e);
         }
-        LOGGER.info("End of method");
+    }
+    
+    public MenuBar createMenuBar(Menu ... menus){
+        MenuBar mb = new MenuBar();
+        mb.getMenus().addAll(menus);
+        return mb;
+    }
+    
+    public Menu createMenu(String name, MenuItem ... items){
+        Menu m = new Menu(name);
+        m.getItems().addAll(items);
+        return m;
+    }
+    
+    public MenuItem createMenuItem(String name, EventHandler<ActionEvent> handler){
+        MenuItem mi = new MenuItem(name, createLabel(null,null,name+"-icon"));
+        mi.setOnAction(handler);
+        return mi;
+    }
+    
+    public Label createLabel(String name, Node forN, String id){
+        Label l = new Label(name, forN);
+        l.setId(id);
+        return l;
+    }
+    
+    public ToolBar createToolBar(){
+        ToolBar tb = new ToolBar();
+        return tb;
     }
 }
