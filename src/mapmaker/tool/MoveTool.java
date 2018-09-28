@@ -4,6 +4,7 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import mapmaker.MapArea;
 import mapmaker.mapelement.ControlPoint;
 
@@ -22,7 +23,8 @@ public class MoveTool extends Tool {
     }
     
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void mousePressed(Pane target, MouseEvent e) {
+        this.target = target;
         lastPoint = new Point2D(e.getX(), e.getY());
         cpGroup = new Group();
         MapArea.getRooms()
@@ -35,7 +37,7 @@ public class MoveTool extends Tool {
                         cpGroup.getChildren().add(cp);
                     });
             });
-        MapArea.getPane().getChildren().add(cpGroup);
+        target.getChildren().add(cpGroup);
     }
 
     @Override
@@ -44,14 +46,15 @@ public class MoveTool extends Tool {
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        MapArea.getPane().getChildren().remove(cpGroup);
-        MapArea.getPane().getChildren().addAll(cpGroup.getChildren());
-       cpGroup.getChildren().clear();
+        target.getChildren().remove(cpGroup);
+        target.getChildren().addAll(cpGroup.getChildren());
+        cpGroup.getChildren().clear();
+        target = null;
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        Bounds pBounds = MapArea.getPane().getBoundsInLocal();
+        Bounds pBounds = target.getBoundsInLocal();
         Bounds gBounds = cpGroup.getBoundsInParent();
         final double xTrans;
         final double yTrans;

@@ -53,29 +53,28 @@ import mapmaker.tool.ToolState;
  * @author owner
  */
 public class MapMaker extends Application {
+    private MapArea                 mapArea;
+    
     private Scene                   rootScene;
     private BorderPane              rootPane;
     private MenuBar                 menuBar;
     private ToolBar                 statusBar;
     private ToolBar                 toolBar;
     private VBox                    detailsBox;
-    private SimpleStringProperty    messageProperty;
     
-    private static boolean GuiFlag = false;
+    private SimpleStringProperty    messageProperty;
     
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        for(String arg : args){
-            if(arg.equals("-GC"))
-                GuiFlag = true;
-        }
         launch(args);
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        mapArea = new MapArea();
+        
         messageProperty = new SimpleStringProperty("Enjoy the map maker!");
         
         rootScene = new Scene(buildRootPane(), 800, 600);
@@ -106,7 +105,7 @@ public class MapMaker extends Application {
         menuBar = createMenuBar(
             createMenu("File",
                 createMenuItem("New", (e) -> {
-                    MapArea.reset();
+                    mapArea.reset();
                 }),
                 createMenuItem("Save", (e) -> {
                 }),
@@ -328,7 +327,7 @@ public class MapMaker extends Application {
         rootPane.setBottom(statusBar);
         rootPane.setLeft(toolBar);
         rootPane.setRight(detailsBox);
-        rootPane.setCenter(MapArea.initPane());
+        rootPane.setCenter(mapArea);
         return rootPane;
     }
     

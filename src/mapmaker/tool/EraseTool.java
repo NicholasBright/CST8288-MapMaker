@@ -8,6 +8,7 @@ package mapmaker.tool;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import mapmaker.MapArea;
 import mapmaker.mapelement.Room;
 
@@ -23,7 +24,8 @@ public class EraseTool extends Tool {
     }
     
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void mousePressed(Pane target, MouseEvent e) {
+        this.target = target;
     }
 
     @Override
@@ -36,7 +38,7 @@ public class EraseTool extends Tool {
             .forEach( (r) -> {
                 toRemove.add(r);
             });
-        MapArea.removeAll(toRemove);
+        target.removeAll(toRemove);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package mapmaker;
 
-import java.util.ArrayList;
 import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,64 +12,45 @@ import mapmaker.tool.ToolState;
  *
  * @author owner
  */
-public class MapArea {
-    private static final ToolState TS = ToolState.getToolState();
+public class MapArea extends Pane {
     
-    private static Pane pane;
     private static ObservableList<Room> rooms = FXCollections.observableArrayList();
     
-    public static Pane initPane(){
-        pane = new Pane();
-        pane.setId("MapArea");
+    public MapArea(){
+        setId("MapArea");
         
-        pane.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-            //if(TS.getActiveTool() != null)
-            TS.getActiveTool().mouseClicked(e);
+        addEventHandler(MouseEvent.ANY, e -> {
+            ToolState.getToolState().getActiveTool().mouseClicked(e);
         });
-        pane.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
-            //if(TS.getActiveTool() != null)
-            TS.getActiveTool().mousePressed(e);
-        });
-        pane.addEventHandler(MouseEvent.MOUSE_RELEASED, e -> {
-            //if(TS.getActiveTool() != null)
-            TS.getActiveTool().mouseReleased(e);
-        });
-        pane.addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> {
-            //if(TS.getActiveTool() != null)
-            TS.getActiveTool().mouseDragged(e);
-        });
-        return pane;
     }
     
-    public static Pane getPane(){
-        return pane;
-    }
-    
-    public static void add(Room n){
-        pane.getChildren().add(0, n);
-        pane.getChildren().addAll(n.getControlPoints());
+    public void add(Room n){
+        getChildren().add(0, n);
+        getChildren().addAll(n.getControlPoints());
         rooms.add(n);
     }
     
-    public static final ObservableList<Room> getRooms(){
+    
+    public ObservableList<Room> getRooms(){
         return rooms;
     }
     
-    public static void reset(){
-        pane.getChildren().clear();
+    public void reset(){
+        getChildren().clear();
         rooms.clear();
     }
     
-    public static void remove(Room r){
-        pane.getChildren().remove(r);
-        pane.getChildren().removeAll(r.getControlPoints());
+    /*
+    public void remove(Room r){
+        getChildren().remove(r);
+        getChildren().removeAll(r.getControlPoints());
         rooms.remove(r);
     }
     
-    public static void removeAll(List<Room> l){
+    public void removeAll(List<Room> l){
         l.stream()
          .forEach( (r) -> {
              remove(r);
          });
-    }
+    }*/
 }

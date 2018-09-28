@@ -7,8 +7,10 @@ package mapmaker.tool;
 
 import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 import mapmaker.MapArea;
+import mapmaker.mapelement.Room;
 
 /**
  *
@@ -27,25 +29,29 @@ public class SelectTool extends Tool {
     }
     
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void mousePressed(Pane target, MouseEvent e) {
+        this.target = target;
         selectedArea.setWidth(0);
         startPoint = new Point2D(e.getX(), e.getY());
-        if(!MapArea.getPane().getChildren().contains(selectedArea))
-            MapArea.getPane().getChildren().add(selectedArea);
-        MapArea.getRooms()
+        if(!target.getChildren().contains(selectedArea))
+            target.getChildren().add(selectedArea);
+        target.getChildren()
             .stream()
-            .forEach((r) -> {
-                r.getControlPoints()
-                    .stream()
-                    .forEach( (cp) -> {
-                       cp.setSelected(false);
-                    });
+            .forEach((n) -> {
+                if(n instanceof Room){
+                    Room r = (Room)n;
+                    r.getControlPoints()
+                        .stream()
+                        .forEach( (cp) -> {
+                           cp.setSelected(false);
+                        });
+                }
             });
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        MapArea.getRooms()
+        target.getChildren()
             .stream()
             .filter((r) -> (r.contains(startPoint) && r.contains(new Point2D(e.getX(), e.getY()))) )
             .forEach((r) -> {
@@ -55,7 +61,7 @@ public class SelectTool extends Tool {
                         cp.setSelected(true);
                     });
             });
-        MapArea.getPane().getChildren().remove(selectedArea);
+        target.getChildren().remove(selectedArea);
     }
 
     @Override
@@ -68,6 +74,7 @@ public class SelectTool extends Tool {
                     cp.setSelected(true);
             });
         });
+        target = null;
     }
 
     @Override
@@ -75,10 +82,10 @@ public class SelectTool extends Tool {
         double eX = e.getX();
         double eY = e.getY();
         
-        if(eX < MapArea.getPane().getBoundsInLocal().getMinX())
+        if(eX < target.getBoundsInLocal().getMinX())
             eX = 0;
-        else if (eX > MapArea.getPane().getBoundsInLocal().getMaxX())
-            eX = MapArea.getPane().getBoundsInLocal().getWidth();
+        else if (eX > target.getBoundsInLocal().getMaxX())
+            eX = target.getBoundsInLocal().getWidth();
         
         if(eX >= startPoint.getX()){
             selectedArea.setX(startPoint.getX());
@@ -89,10 +96,10 @@ public class SelectTool extends Tool {
             selectedArea.setWidth(startPoint.getX()-eX);
         }
         
-        if(eY < MapArea.getPane().getBoundsInLocal().getMinY())
+        if(eY < target.getBoundsInLocal().getMinY())
             eY = 0;
-        else if (eY > MapArea.getPane().getBoundsInLocal().getMaxY())
-            eY = MapArea.getPane().getBoundsInLocal().getHeight();
+        else if (eY > target.getBoundsInLocal().getMaxY())
+            eY = target.getBoundsInLocal().getHeight();
         
         if(eY >= startPoint.getY()){
             selectedArea.setY(startPoint.getY());

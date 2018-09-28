@@ -3,6 +3,7 @@ package mapmaker.tool;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringPropertyBase;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 
 /**
  *
@@ -13,6 +14,7 @@ public abstract class Tool{
     protected SimpleStringProperty nameProperty;
     protected String description;
     protected SimpleStringProperty descProperty;
+    protected Pane target;
     
     
     protected Tool(String toolName, String toolDescription){
@@ -40,7 +42,7 @@ public abstract class Tool{
         return descProperty;
     }
     
-    public abstract void mousePressed (MouseEvent e);
+    public abstract void mousePressed (Pane target, MouseEvent e);
     public abstract void mouseClicked (MouseEvent e);
     public abstract void mouseReleased (MouseEvent e);
     public abstract void mouseDragged (MouseEvent e);

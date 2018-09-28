@@ -6,6 +6,7 @@
 package mapmaker.tool;
 
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 
 /**
  *
@@ -18,7 +19,7 @@ public class PathTool extends Tool {
     }
     
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void mousePressed(Pane target, MouseEvent e) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
