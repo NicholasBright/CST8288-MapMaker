@@ -6,29 +6,45 @@
 package mapmaker;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToolBar;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import mapmaker.mapelement.Room;
+import mapmaker.tool.CreateRoomTool;
+import mapmaker.tool.DoorTool;
+import mapmaker.tool.EraseTool;
+import mapmaker.tool.MoveTool;
+import mapmaker.tool.PathTool;
+import mapmaker.tool.SelectTool;
 import mapmaker.tool.Tool;
 import mapmaker.tool.ToolState;
 
@@ -41,9 +57,9 @@ public class MapMaker extends Application {
     private BorderPane              rootPane;
     private MenuBar                 menuBar;
     private ToolBar                 statusBar;
-    private ToolBar                 toolsBar;
+    private ToolBar                 toolBar;
     private VBox                    detailsBox;
-    private ObservableList<String>  messages;
+    private SimpleStringProperty    messageProperty;
     
     private static boolean GuiFlag = false;
     
@@ -60,6 +76,8 @@ public class MapMaker extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        messageProperty = new SimpleStringProperty("Enjoy the map maker!");
+        
         rootScene = new Scene(buildRootPane(), 800, 600);
         primaryStage.setScene(rootScene);
         primaryStage.setMinWidth(600);
@@ -84,7 +102,7 @@ public class MapMaker extends Application {
     
     public Pane buildRootPane(){
         rootPane = new BorderPane();
-
+        
         menuBar = createMenuBar(
             createMenu("File",
                 createMenuItem("New", (e) -> {
@@ -94,7 +112,7 @@ public class MapMaker extends Application {
                 }),
                 createMenuItem("Reload Style", (e) -> {
                     loadStylesheet();
-                }, createLabel(null, "CSS-icon")),
+                }, createLabel(null, "CSS-icon", null)),
                 new SeparatorMenuItem(),
                 createMenuItem("Exit", (e) -> {
                     Platform.exit();
@@ -168,25 +186,149 @@ public class MapMaker extends Application {
             )
         );
         
-        //Setting up the special label to show selected tool
-        Label selectedName = createLabel(null, "SelectedToolLabel");
+        //Setting up the special labels that are bound
+        Label selectedName = createLabel(null, "SelectedToolLabel", Label.USE_PREF_SIZE);
         ToolState.getToolState().getActiveToolProperty().addListener( (ObservableValue<? extends Tool> observable, Tool oldValue, Tool newValue) -> {
             selectedName.setText(newValue.getNameProperty().get());
         });
         
-        statusBar = createToolBar( "StatusBar",
-                createLabel("Selected: ", null),
+        Label message = createLabel(null, "MessageLabel", Label.USE_PREF_SIZE);
+        message.textProperty().bind(messageProperty);
+        
+        statusBar = createToolBar( "StatusBar", Orientation.HORIZONTAL,
+                createLabel("Selected: ", null, Label.USE_PREF_SIZE),
                 selectedName,
                 new Separator(),
-                createLabel("Messages: ", null),
-                new ListView(messages)
+                createLabel("Messages: ", null, Label.USE_PREF_SIZE),
+                message
         );
+        
+        //Creating the Room MenuButton before so I don't need a one off method
+        MenuButton roomMenuButton = new MenuButton();
+        roomMenuButton.setId("Room");
+        roomMenuButton.getItems().addAll(
+            createMenuItem("Line", e -> {
+                    ToolState.getToolState().setActiveTool(new CreateRoomTool(), 2);
+                    messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
+            }),
+            createMenuItem("Triangle", e -> {
+                    ToolState.getToolState().setActiveTool(new CreateRoomTool(), 3);
+                    messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
+            }),
+            createMenuItem("Retangle", e -> {
+                    ToolState.getToolState().setActiveTool(new CreateRoomTool(), 4);
+                    messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
+            }),
+            createMenuItem("Pentagon", e -> {
+                    ToolState.getToolState().setActiveTool(new CreateRoomTool(), 5);
+                    messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
+            }),
+            createMenuItem("Hexagon", e -> {
+                    ToolState.getToolState().setActiveTool(new CreateRoomTool(), 6);
+                    messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
+            })
+        );
+        
+        toolBar = createToolBar( "ToolBar", Orientation.VERTICAL,
+                createButton(null, "Select", e -> {
+                    ToolState.getToolState().setActiveTool(new SelectTool());
+                    messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
+                }),
+                createButton(null, "Move", e -> {
+                    ToolState.getToolState().setActiveTool(new MoveTool());
+                    messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
+                }),
+                createButton(null, "Path", e -> {
+                    ToolState.getToolState().setActiveTool(new PathTool());
+                    messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
+                }),
+                roomMenuButton,
+                createButton(null, "Erase", e -> {
+                    ToolState.getToolState().setActiveTool(new EraseTool());
+                    messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
+                }),
+                createButton(null, "Door", e-> {
+                    ToolState.getToolState().setActiveTool(new DoorTool());
+                    messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
+                })
+        );
+        
+        detailsBox = new VBox();
+        detailsBox.prefHeightProperty().bind(rootPane.heightProperty());
+        detailsBox.prefWidthProperty().bind(rootPane.widthProperty().divide(5.0));
+        
+        ObservableList<Label> roomList = FXCollections.observableArrayList();
+        ListView<Label> roomListView = new ListView<>(roomList);
+        roomListView.setId("RoomList");
+        
+        roomListView.prefHeightProperty().bind(detailsBox.heightProperty().multiply(0.5));
+        roomListView.prefWidthProperty().bind(detailsBox.widthProperty());
+        
+        MapArea.getRooms().addListener((ListChangeListener.Change<? extends Room> c) -> {
+            while(c.next()){
+                c.getAddedSubList()
+                 .stream()
+                 .forEach( r -> {
+                    String polyName;
+                    switch(r.getNumSides()){
+                        case 2:
+                            polyName = "Line";
+                            break;
+                        case 3: 
+                            polyName = "Triangle";
+                            break;
+                        case 4:
+                            polyName = "Rectangle";
+                            break;
+                        case 5:
+                            polyName = "Pentagon";
+                            break;
+                        case 6:
+                            polyName = "Hexagon";
+                            break;
+                        default:
+                            polyName = "Polygon";
+                            break;
+                    }
+                    Label newRoomLabel = new Label(polyName);
+                    newRoomLabel.setUserData(r);
+                    newRoomLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> {
+                        ((Room) newRoomLabel.getUserData()).setHighlighted(true);
+                    });
+                    newRoomLabel.addEventHandler(MouseEvent.MOUSE_EXITED, e -> {
+                        ((Room) newRoomLabel.getUserData()).setHighlighted(false);
+                    });
+                    roomList.add(newRoomLabel);
+                });
+                ArrayList<Label> toDel = new ArrayList<>();
+                c.getRemoved()
+                 .stream()
+                 .forEach( r -> {
+                    roomList.stream()
+                        .filter( (l) -> (l instanceof Label))
+                        .forEach( l -> {
+                            Label label = (Label) l;
+                            if(label.getUserData() == r){
+                                toDel.add(l);
+                            }
+                        });
+                });
+                roomList.removeAll(toDel);
+            }
+        });
+        
+        GridPane detailsPane = new GridPane();
+        detailsPane.setId("Details");
+        detailsPane.prefHeightProperty().bind(detailsBox.heightProperty().multiply(0.5));
+        detailsPane.prefWidthProperty().bind(detailsBox.widthProperty());
+        
+        detailsBox.getChildren().addAll(roomListView, detailsPane);
         
         rootPane.setTop(menuBar);
         rootPane.setBottom(statusBar);
-        //rootPane.setLeft(toolsBar);
-        //rootPane.setRight(detailsBox());
-        //rootPane.setCenter(MapArea.initPane());
+        rootPane.setLeft(toolBar);
+        rootPane.setRight(detailsBox);
+        rootPane.setCenter(MapArea.initPane());
         return rootPane;
     }
     
@@ -203,7 +345,7 @@ public class MapMaker extends Application {
     }
     
     public MenuItem createMenuItem(String name, EventHandler<ActionEvent> handler){
-        MenuItem mi = new MenuItem(name, createLabel(null,name+"-icon"));
+        MenuItem mi = new MenuItem(name, createLabel(null,name+"-icon", null));
         mi.setOnAction(handler);
         return mi;
     }
@@ -214,16 +356,25 @@ public class MapMaker extends Application {
         return mi;
     }
     
-    public Label createLabel(String text, String id){
+    public Label createLabel(String text, String id, Double minWidth){
         Label l = new Label();
         l.setId(id);
         l.setText(text);
+        l.setMinWidth(minWidth == null ? 0.0: minWidth);
         return l;
     }
     
-    public ToolBar createToolBar(String id, Node ... items){
+    public ToolBar createToolBar(String id, Orientation orientation, Node ... items){
         ToolBar tb = new ToolBar(items);
         tb.setId(id);
+        tb.setOrientation(orientation);
         return tb;
+    }
+    
+    public Button createButton(String name, String id, EventHandler<ActionEvent> handler){
+        Button b = new Button(name);
+        b.setId(id);
+        b.setOnAction(handler);
+        return b;
     }
 }

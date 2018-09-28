@@ -17,9 +17,8 @@ public class MoveTool extends Tool {
     Point2D lastPoint = null;
     Group cpGroup = null;
     
-    private MoveTool(){
+    public MoveTool(){
         super("Move Tool", "Click and drag to move selected control points around the pane");
-        t = MT;
     }
     
     @Override
@@ -84,9 +83,5 @@ public class MoveTool extends Tool {
         });
         
         lastPoint = new Point2D(lastPoint.getX() + xTrans, e.getY());
-    }
-    
-    public static Tool getTool(){
-        return MT;
     }
 }

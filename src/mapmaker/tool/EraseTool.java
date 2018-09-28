@@ -18,9 +18,8 @@ import mapmaker.mapelement.Room;
 public class EraseTool extends Tool {
     private static final EraseTool ET = new EraseTool();
     
-    private EraseTool(){
+    public EraseTool(){
         super("Erase Tool", "Click on any room to erase it");
-        t = ET;
     }
     
     @Override
@@ -46,9 +45,5 @@ public class EraseTool extends Tool {
 
     @Override
     public void mouseDragged(MouseEvent e) {
-    }
-    
-    public static Tool getTool(){
-        return ET;
     }
 }

@@ -17,10 +17,9 @@ public final class CreateRoomTool extends Tool {
     Point2D startPoint;
     Room createdRoom;
     
-    private CreateRoomTool (){
+    public CreateRoomTool (){
         super("Room Tool", "Creates rooms");
         //this.sides = 2;
-        t = CRT;
     }
     
     @Override
@@ -49,9 +48,5 @@ public final class CreateRoomTool extends Tool {
         }
         if(inBoundsFlag)
             createdRoom.updateShape(sides, newEnd.distance(startPoint), startPoint, newEnd);
-    }
-    
-    public static Tool getTool(){
-        return CRT;
     }
 }

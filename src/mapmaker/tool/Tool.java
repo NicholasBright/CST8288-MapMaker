@@ -9,7 +9,6 @@ import javafx.scene.input.MouseEvent;
  * @author Nicholas Bright
  */
 public abstract class Tool{
-    protected static Tool t;
     protected String name;
     protected SimpleStringProperty nameProperty;
     protected String description;
@@ -37,6 +36,10 @@ public abstract class Tool{
         return nameProperty;
     }
     
+    public final StringPropertyBase getDescriptionProperty(){
+        return descProperty;
+    }
+    
     public abstract void mousePressed (MouseEvent e);
     public abstract void mouseClicked (MouseEvent e);
     public abstract void mouseReleased (MouseEvent e);
@@ -49,5 +52,10 @@ public abstract class Tool{
             if(t.getNameProperty().get().equals(getNameProperty().get()));
         }
         return false;
+    }
+    
+    @Override
+    public String toString(){
+        return name;
     }
 }

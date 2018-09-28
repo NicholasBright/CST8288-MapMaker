@@ -8,6 +8,7 @@ package mapmaker.tool;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 /**
@@ -16,11 +17,12 @@ import javafx.beans.property.SimpleObjectProperty;
  */
 public final class ToolState {
     private static final ToolState TS = new ToolState();
+    
     private final List<Object> options;
     
     private Tool activeTool;
     
-    private final SimpleObjectProperty<Tool> activeToolProperty;
+    private final ObjectProperty<Tool> activeToolProperty;
     
     private ToolState(){
         this.options = new ArrayList<>();
@@ -36,6 +38,8 @@ public final class ToolState {
                 fireValueChangedEvent();
             }
         };
+        
+        setActiveTool(new SelectTool());
     }
     
     public static ToolState getToolState(){return TS;}
@@ -50,7 +54,7 @@ public final class ToolState {
         return activeToolProperty.get();
     }
     
-    public SimpleObjectProperty<Tool> getActiveToolProperty(){
+    public ObjectProperty<Tool> getActiveToolProperty(){
         return activeToolProperty;
     }
     

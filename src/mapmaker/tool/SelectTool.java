@@ -15,12 +15,10 @@ import mapmaker.MapArea;
  * @author owner
  */
 public class SelectTool extends Tool {
-    private static final SelectTool ST = new SelectTool();
-    
     Point2D startPoint;
     Rectangle selectedArea;
     
-    private SelectTool(){
+    public SelectTool(){
         super("Select Tool", "Click and drag to select Control Points, or click on a Room to select all of it's Control Points");
         selectedArea = new Rectangle(0,0, 0, 10.0);
         //This style is programatically set to stop the select area from breaking out of the pane
@@ -104,9 +102,5 @@ public class SelectTool extends Tool {
             selectedArea.setY(eY);
             selectedArea.setHeight(startPoint.getY()-eY);
         }
-    }
-    
-    public static Tool getTool(){
-        return ST;
     }
 }
