@@ -17,7 +17,8 @@ public abstract class Tool{
     protected Pane target;
     
     
-    protected Tool(String toolName, String toolDescription){
+    protected Tool(String toolName, String toolDescription, Pane target){
+        this.target = target;
         name = toolName;
         description = toolDescription;
         nameProperty = new SimpleStringProperty() {
@@ -42,7 +43,7 @@ public abstract class Tool{
         return descProperty;
     }
     
-    public abstract void mousePressed (Pane target, MouseEvent e);
+    public abstract void mousePressed (MouseEvent e);
     public abstract void mouseClicked (MouseEvent e);
     public abstract void mouseReleased (MouseEvent e);
     public abstract void mouseDragged (MouseEvent e);

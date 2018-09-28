@@ -2,7 +2,7 @@ package mapmaker.tool;
 
 import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
-import mapmaker.MapArea;
+import javafx.scene.layout.Pane;
 import mapmaker.mapelement.ControlPoint;
 import mapmaker.mapelement.Room;
 
@@ -11,14 +11,12 @@ import mapmaker.mapelement.Room;
  * @author owner
  */
 public final class CreateRoomTool extends Tool {
-    private static final CreateRoomTool CRT = new CreateRoomTool();
-    
     int sides;
     Point2D startPoint;
     Room createdRoom;
     
-    public CreateRoomTool (){
-        super("Room Tool", "Creates rooms");
+    public CreateRoomTool (Pane target){
+        super("Room Tool", "Creates rooms", target);
         //this.sides = 2;
     }
     
@@ -27,7 +25,7 @@ public final class CreateRoomTool extends Tool {
         this.sides = (Integer) ToolState.getToolState().getOption(0);
         startPoint = new Point2D(e.getX(), e.getY());
         createdRoom = new Room(sides, 1.0, startPoint);
-        MapArea.add(createdRoom);
+        target.getChildren().add(createdRoom);
     }
 
     @Override
@@ -43,7 +41,7 @@ public final class CreateRoomTool extends Tool {
         Room newRoom = new Room(createdRoom.getNumSides(), createdRoom.getSideLength(), startPoint, newEnd);
         boolean inBoundsFlag = true;
         for(ControlPoint cp : newRoom.getControlPoints()){
-            if(! MapArea.getPane().getBoundsInLocal().contains(cp.getBoundsInParent()))
+            if(! target.getBoundsInLocal().contains(cp.getBoundsInParent()))
                 inBoundsFlag = false;
         }
         if(inBoundsFlag)

@@ -17,28 +17,29 @@ import mapmaker.mapelement.Room;
  * @author owner
  */
 public class EraseTool extends Tool {
-    private static final EraseTool ET = new EraseTool();
     
-    public EraseTool(){
-        super("Erase Tool", "Click on any room to erase it");
+    public EraseTool(Pane target){
+        super("Erase Tool", "Click on any room to erase it", target);
     }
     
     @Override
-    public void mousePressed(Pane target, MouseEvent e) {
-        this.target = target;
+    public void mousePressed(MouseEvent e) {
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
         List<Room> toRemove = new ArrayList<>();
-        MapArea.getRooms()
+        target.getChildren()
             .stream()
-            .filter( (r) -> (r.contains(e.getX(), e.getY())))
             .limit(1)
-            .forEach( (r) -> {
-                toRemove.add(r);
+            .forEach( (n) -> {
+                if(n instanceof Room){
+                    Room r = (Room)n;
+                    if(r.contains(e.getX(), e.getY()))
+                        toRemove.add(r);
+                }
             });
-        target.removeAll(toRemove);
+        target.getChildren().removeAll(toRemove);
     }
 
     @Override

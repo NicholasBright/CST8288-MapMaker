@@ -1,6 +1,5 @@
 package mapmaker;
 
-import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.input.MouseEvent;
@@ -19,8 +18,20 @@ public class MapArea extends Pane {
     public MapArea(){
         setId("MapArea");
         
-        addEventHandler(MouseEvent.ANY, e -> {
+        addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
+            ToolState.getToolState().getActiveTool().mousePressed(e);
+        });
+        
+        addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
             ToolState.getToolState().getActiveTool().mouseClicked(e);
+        });
+        
+        addEventHandler(MouseEvent.MOUSE_RELEASED, e -> {
+            ToolState.getToolState().getActiveTool().mouseReleased(e);
+        });
+        
+        addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> {
+            ToolState.getToolState().getActiveTool().mouseDragged(e);
         });
     }
     

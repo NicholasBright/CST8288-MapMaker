@@ -6,6 +6,7 @@
 package mapmaker.tool;
 
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 
 /**
  *
@@ -13,8 +14,8 @@ import javafx.scene.input.MouseEvent;
  */
 public class DoorTool extends Tool {
     
-    public DoorTool(){
-        super("Door Tool", "Click along the edge of a room to create a door there");
+    public DoorTool(Pane target){
+        super("Door Tool", "Click along the edge of a room to create a door there", target);
     }
     
     @Override

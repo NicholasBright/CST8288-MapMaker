@@ -9,7 +9,6 @@ import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
-import mapmaker.MapArea;
 import mapmaker.mapelement.Room;
 
 /**
@@ -20,8 +19,8 @@ public class SelectTool extends Tool {
     Point2D startPoint;
     Rectangle selectedArea;
     
-    public SelectTool(){
-        super("Select Tool", "Click and drag to select Control Points, or click on a Room to select all of it's Control Points");
+    public SelectTool(Pane target){
+        super("Select Tool", "Click and drag to select Control Points, or click on a Room to select all of it's Control Points", target);
         selectedArea = new Rectangle(0,0, 0, 10.0);
         //This style is programatically set to stop the select area from breaking out of the pane
         selectedArea.setStyle("-fx-stroke-type: inside;");
@@ -29,8 +28,7 @@ public class SelectTool extends Tool {
     }
     
     @Override
-    public void mousePressed(Pane target, MouseEvent e) {
-        this.target = target;
+    public void mousePressed(MouseEvent e) {
         selectedArea.setWidth(0);
         startPoint = new Point2D(e.getX(), e.getY());
         if(!target.getChildren().contains(selectedArea))
@@ -53,28 +51,34 @@ public class SelectTool extends Tool {
     public void mouseClicked(MouseEvent e) {
         target.getChildren()
             .stream()
-            .filter((r) -> (r.contains(startPoint) && r.contains(new Point2D(e.getX(), e.getY()))) )
-            .forEach((r) -> {
-                r.getControlPoints()
-                    .stream()
-                    .forEach((cp) -> {
-                        cp.setSelected(true);
-                    });
+            .forEach((n) -> {
+                if(n instanceof Room){
+                    Room r = (Room)n;
+                    if(r.contains(startPoint) && r.contains(new Point2D(e.getX(), e.getY()))){
+                        r.getControlPoints()
+                            .stream()
+                            .forEach((cp) -> {
+                                cp.setSelected(true);
+                            });
+                    }
+                }
             });
         target.getChildren().remove(selectedArea);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        MapArea.getRooms().forEach((r) -> {
-            r.getControlPoints()
-                .stream()
-                .filter((cp) -> (selectedArea.getBoundsInParent().intersects(cp.getBoundsInParent())))
-                .forEach((cp) -> {
-                    cp.setSelected(true);
-            });
+        target.getChildren().stream().forEach((n) -> {
+            if(n instanceof Room){
+                Room r = (Room)n;
+                r.getControlPoints()
+                    .stream()
+                    .filter((cp) -> (selectedArea.getBoundsInParent().intersects(cp.getBoundsInParent())))
+                    .forEach((cp) -> {
+                        cp.setSelected(true);
+                });
+            }
         });
-        target = null;
     }
 
     @Override

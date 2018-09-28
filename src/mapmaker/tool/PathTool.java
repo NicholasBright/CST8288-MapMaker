@@ -14,12 +14,12 @@ import javafx.scene.layout.Pane;
  */
 public class PathTool extends Tool {
     
-    public PathTool(){
-        super("Path Tool","Click from one Door to another to create a path");
+    public PathTool(Pane target){
+        super("Path Tool","Click from one Door to another to create a path", target);
     }
     
     @Override
-    public void mousePressed(Pane target, MouseEvent e) {
+    public void mousePressed(MouseEvent e) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

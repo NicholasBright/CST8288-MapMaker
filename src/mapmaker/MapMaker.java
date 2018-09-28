@@ -85,6 +85,8 @@ public class MapMaker extends Application {
         
         loadStylesheet();
         
+        ToolState.getToolState().setActiveTool(new SelectTool(mapArea));
+        
         primaryStage.show();
     }
     
@@ -207,47 +209,47 @@ public class MapMaker extends Application {
         roomMenuButton.setId("Room");
         roomMenuButton.getItems().addAll(
             createMenuItem("Line", e -> {
-                    ToolState.getToolState().setActiveTool(new CreateRoomTool(), 2);
+                    ToolState.getToolState().setActiveTool(new CreateRoomTool(mapArea), 2);
                     messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
             }),
             createMenuItem("Triangle", e -> {
-                    ToolState.getToolState().setActiveTool(new CreateRoomTool(), 3);
+                    ToolState.getToolState().setActiveTool(new CreateRoomTool(mapArea), 3);
                     messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
             }),
             createMenuItem("Retangle", e -> {
-                    ToolState.getToolState().setActiveTool(new CreateRoomTool(), 4);
+                    ToolState.getToolState().setActiveTool(new CreateRoomTool(mapArea), 4);
                     messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
             }),
             createMenuItem("Pentagon", e -> {
-                    ToolState.getToolState().setActiveTool(new CreateRoomTool(), 5);
+                    ToolState.getToolState().setActiveTool(new CreateRoomTool(mapArea), 5);
                     messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
             }),
             createMenuItem("Hexagon", e -> {
-                    ToolState.getToolState().setActiveTool(new CreateRoomTool(), 6);
+                    ToolState.getToolState().setActiveTool(new CreateRoomTool(mapArea), 6);
                     messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
             })
         );
         
         toolBar = createToolBar( "ToolBar", Orientation.VERTICAL,
                 createButton(null, "Select", e -> {
-                    ToolState.getToolState().setActiveTool(new SelectTool());
+                    ToolState.getToolState().setActiveTool(new SelectTool(mapArea));
                     messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
                 }),
                 createButton(null, "Move", e -> {
-                    ToolState.getToolState().setActiveTool(new MoveTool());
+                    ToolState.getToolState().setActiveTool(new MoveTool(mapArea));
                     messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
                 }),
                 createButton(null, "Path", e -> {
-                    ToolState.getToolState().setActiveTool(new PathTool());
+                    ToolState.getToolState().setActiveTool(new PathTool(mapArea));
                     messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
                 }),
                 roomMenuButton,
                 createButton(null, "Erase", e -> {
-                    ToolState.getToolState().setActiveTool(new EraseTool());
+                    ToolState.getToolState().setActiveTool(new EraseTool(mapArea));
                     messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
                 }),
                 createButton(null, "Door", e-> {
-                    ToolState.getToolState().setActiveTool(new DoorTool());
+                    ToolState.getToolState().setActiveTool(new DoorTool(mapArea));
                     messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
                 })
         );
@@ -263,7 +265,7 @@ public class MapMaker extends Application {
         roomListView.prefHeightProperty().bind(detailsBox.heightProperty().multiply(0.5));
         roomListView.prefWidthProperty().bind(detailsBox.widthProperty());
         
-        MapArea.getRooms().addListener((ListChangeListener.Change<? extends Room> c) -> {
+        mapArea.getRooms().addListener((ListChangeListener.Change<? extends Room> c) -> {
             while(c.next()){
                 c.getAddedSubList()
                  .stream()

@@ -7,35 +7,36 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import mapmaker.MapArea;
 import mapmaker.mapelement.ControlPoint;
+import mapmaker.mapelement.Room;
 
 /**
  *
  * @author owner
  */
 public class MoveTool extends Tool {
-    private static final MoveTool MT = new MoveTool();
-    
     Point2D lastPoint = null;
     Group cpGroup = null;
     
-    public MoveTool(){
-        super("Move Tool", "Click and drag to move selected control points around the pane");
+    public MoveTool(Pane target){
+        super("Move Tool", "Click and drag to move selected control points around the pane", target);
     }
     
     @Override
-    public void mousePressed(Pane target, MouseEvent e) {
-        this.target = target;
+    public void mousePressed(MouseEvent e) {
         lastPoint = new Point2D(e.getX(), e.getY());
         cpGroup = new Group();
-        MapArea.getRooms()
+        target.getChildren()
             .stream()
-            .forEach( (r) -> {
-                r.getControlPoints()
-                    .stream()
-                    .filter( (cp) -> (cp.isSelected()))
-                    .forEach( (cp) -> {
-                        cpGroup.getChildren().add(cp);
-                    });
+            .forEach( (n) -> {
+                if(n instanceof Room){
+                    Room r = (Room)n;
+                    r.getControlPoints()
+                        .stream()
+                        .filter( (cp) -> (cp.isSelected()))
+                        .forEach( (cp) -> {
+                            cpGroup.getChildren().add(cp);
+                        });
+                }
             });
         target.getChildren().add(cpGroup);
     }
