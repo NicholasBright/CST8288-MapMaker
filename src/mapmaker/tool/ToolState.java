@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 
 /**
  *
@@ -37,7 +36,6 @@ public final class ToolState {
                 fireValueChangedEvent();
             }
         };
-        activeToolProperty.set(SelectTool.getTool());
     }
     
     public static ToolState getToolState(){return TS;}
@@ -58,5 +56,9 @@ public final class ToolState {
     
     public Object getOption(int index){
         return options.get(index);
+    }
+    
+    public List<Object> getOptions(){
+        return options;
     }
 }

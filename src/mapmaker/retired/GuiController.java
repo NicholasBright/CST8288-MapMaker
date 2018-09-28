@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mapmaker;
+package mapmaker.retired;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -35,6 +35,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import mapmaker.MapArea;
+import mapmaker.ResourceLoader;
 import mapmaker.mapelement.Room;
 import mapmaker.tool.CreateRoomTool;
 import mapmaker.tool.EraseTool;
@@ -47,7 +49,7 @@ import mapmaker.tool.ToolState;
  *
  * @author owner
  */
-public class GuiController{
+class GuiController{
     private static BorderPane rootPane;
     private static MenuBar    menuBar;
     private static ToolBar    statusBar;
@@ -217,8 +219,8 @@ public class GuiController{
         ToolState.getToolState().getActiveToolProperty().addListener( (ObservableValue<? extends Tool> observable, Tool oldValue, Tool newValue) -> {
             selectedName.setText(newValue.getNameProperty().get());
         });
-        selectedName.setText(ToolState.getToolState().getActiveToolProperty().get().getNameProperty().get());
-        selectedName.setId("NameOfSelectedTool");
+        //selectedName.setText(ToolState.getToolState().getActiveToolProperty().get().getNameProperty().get());
+        //selectedName.setId("NameOfSelectedTool");
         selectedName.setMinWidth(Label.USE_PREF_SIZE);
         
         Label messageText = new Label("");
