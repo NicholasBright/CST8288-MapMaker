@@ -1,7 +1,11 @@
 package mapmaker;
 
+import java.util.ArrayList;
+import java.util.List;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import mapmaker.mapelement.Room;
@@ -33,12 +37,36 @@ public class MapArea extends Pane {
         addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> {
             ToolState.getToolState().getActiveTool().mouseDragged(e);
         });
-    }
-    
-    public void add(Room n){
-        getChildren().add(0, n);
-        getChildren().addAll(n.getControlPoints());
-        rooms.add(n);
+        
+        addEventHandler(MouseEvent.MOUSE_EXITED, e -> {
+            ToolState.getToolState().getActiveTool().reset();
+        });
+        
+        
+        super.getChildren().addListener((ListChangeListener.Change<? extends Node> c) -> {
+            while(c.next()){
+                if(c.wasAdded()){
+                    c.getAddedSubList()
+                        .stream()
+                        .forEach((Node n) -> {
+                            if(n instanceof Room){
+                                Room r = (Room)n;
+                                add(r);
+                            }
+                        });
+                }
+                else if(c.wasRemoved()){
+                    c.getAddedSubList()
+                        .stream()
+                        .forEach((n) -> {
+                            if(n instanceof Room){
+                                Room r = (Room)n;
+                                remove(r);
+                            }
+                        });
+                }
+            }
+        });
     }
     
     
@@ -51,10 +79,11 @@ public class MapArea extends Pane {
         rooms.clear();
     }
     
-    /*
+    public void add(Room r){
+        rooms.add(r);
+    }
+    
     public void remove(Room r){
-        getChildren().remove(r);
-        getChildren().removeAll(r.getControlPoints());
         rooms.remove(r);
     }
     
@@ -63,5 +92,5 @@ public class MapArea extends Pane {
          .forEach( (r) -> {
              remove(r);
          });
-    }*/
+    }
 }

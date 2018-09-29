@@ -47,6 +47,7 @@ public abstract class Tool{
     public abstract void mouseClicked (MouseEvent e);
     public abstract void mouseReleased (MouseEvent e);
     public abstract void mouseDragged (MouseEvent e);
+    public abstract void reset();
     
     @Override
     public boolean equals(Object o){

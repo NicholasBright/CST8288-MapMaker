@@ -5,7 +5,6 @@ import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-import mapmaker.MapArea;
 import mapmaker.mapelement.ControlPoint;
 import mapmaker.mapelement.Room;
 
@@ -27,7 +26,7 @@ public class MoveTool extends Tool {
         cpGroup = new Group();
         target.getChildren()
             .stream()
-            .forEach( (n) -> {
+            .forEach((n) -> {
                 if(n instanceof Room){
                     Room r = (Room)n;
                     r.getControlPoints()
@@ -87,5 +86,10 @@ public class MoveTool extends Tool {
         });
         
         lastPoint = new Point2D(lastPoint.getX() + xTrans, e.getY());
+    }
+    
+    @Override
+    public void reset() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

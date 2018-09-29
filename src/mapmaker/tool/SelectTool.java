@@ -29,22 +29,11 @@ public class SelectTool extends Tool {
     
     @Override
     public void mousePressed(MouseEvent e) {
+        reset();
         selectedArea.setWidth(0);
         startPoint = new Point2D(e.getX(), e.getY());
         if(!target.getChildren().contains(selectedArea))
             target.getChildren().add(selectedArea);
-        target.getChildren()
-            .stream()
-            .forEach((n) -> {
-                if(n instanceof Room){
-                    Room r = (Room)n;
-                    r.getControlPoints()
-                        .stream()
-                        .forEach( (cp) -> {
-                           cp.setSelected(false);
-                        });
-                }
-            });
     }
 
     @Override
@@ -112,6 +101,26 @@ public class SelectTool extends Tool {
         else {
             selectedArea.setY(eY);
             selectedArea.setHeight(startPoint.getY()-eY);
+        }
+    }
+    
+    @Override
+    public void reset(){
+        if(target != null){
+            if(target.getChildren().contains(selectedArea))
+                target.getChildren().remove(selectedArea);
+            target.getChildren()
+                .stream()
+                .forEach((n) -> {
+                    if(n instanceof Room){
+                        Room r = (Room)n;
+                        r.getControlPoints()
+                            .stream()
+                            .forEach( (cp) -> {
+                               cp.setSelected(false);
+                            });
+                    }
+                });
         }
     }
 }

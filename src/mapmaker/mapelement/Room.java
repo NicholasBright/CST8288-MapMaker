@@ -15,7 +15,7 @@ import javafx.scene.transform.Rotate;
 public final class Room extends Polygon{
     int numSides;
     double sideLength;
-    Rotate rotation;
+    Rotate rotation = new Rotate();
     ArrayList<ControlPoint> controlPoints = new ArrayList<>();
     
     private final BooleanProperty highlighted = new BooleanPropertyBase(false) {
@@ -38,7 +38,6 @@ public final class Room extends Polygon{
     private static PseudoClass HIGHLIGHTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("highlighted");
     
     public Room(int numSides, double sideLength, Point2D ... startPoints){
-        rotation = new Rotate();
         rotation.setAngle(0);
         this.getTransforms().add(rotation);
         updateShape(numSides, sideLength, startPoints);
@@ -46,7 +45,6 @@ public final class Room extends Polygon{
     }
     
     public Room(int numSides, double sideLength, Double ... startPoints){
-        rotation = new Rotate();
         rotation.setAngle(0);
         this.getTransforms().add(rotation);
         updateShape(numSides, sideLength, startPoints);
@@ -57,7 +55,7 @@ public final class Room extends Polygon{
     public double getSideLength(){ return sideLength;}
     
     public void updateShape(int numSides, double sideLength){
-        updateShape(numSides, sideLength, (Double[]) getPoints().toArray());
+        updateShape(numSides, sideLength, (Double[]) super.getPoints().toArray());
     }
     
     public void updateShape(int numSides, double sideLength, Double ... pointPieces) throws ArrayIndexOutOfBoundsException {
@@ -74,7 +72,7 @@ public final class Room extends Polygon{
         this.numSides = numSides;
         this.sideLength = sideLength;
         
-        this.getPoints().clear();
+        super.getPoints().clear();
         
         Double points[] = new Double[numSides*2];
         if(controlPoints.size() > 0)

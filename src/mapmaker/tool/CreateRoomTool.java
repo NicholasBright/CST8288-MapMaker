@@ -47,4 +47,8 @@ public final class CreateRoomTool extends Tool {
         if(inBoundsFlag)
             createdRoom.updateShape(sides, newEnd.distance(startPoint), startPoint, newEnd);
     }
+    
+    @Override
+    public void reset() {
+    }
 }

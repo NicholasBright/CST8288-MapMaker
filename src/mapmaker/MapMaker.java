@@ -269,7 +269,7 @@ public class MapMaker extends Application {
             while(c.next()){
                 c.getAddedSubList()
                  .stream()
-                 .forEach( r -> {
+                 .forEach(r -> {
                     String polyName;
                     switch(r.getNumSides()){
                         case 2:

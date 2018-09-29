@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-import mapmaker.MapArea;
 import mapmaker.mapelement.Room;
 
 /**
@@ -32,7 +31,7 @@ public class EraseTool extends Tool {
         target.getChildren()
             .stream()
             .limit(1)
-            .forEach( (n) -> {
+            .forEach((n) -> {
                 if(n instanceof Room){
                     Room r = (Room)n;
                     if(r.contains(e.getX(), e.getY()))
@@ -48,5 +47,10 @@ public class EraseTool extends Tool {
 
     @Override
     public void mouseDragged(MouseEvent e) {
+    }
+    
+    @Override
+    public void reset() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
