@@ -34,6 +34,8 @@ public final class ToolState {
             
             @Override
             public void set(Tool t){
+                if(activeTool != null)
+                    activeTool.reset();
                 activeTool = t;
                 fireValueChangedEvent();
             }

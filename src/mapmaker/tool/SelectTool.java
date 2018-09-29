@@ -30,10 +30,10 @@ public class SelectTool extends Tool {
     @Override
     public void mousePressed(MouseEvent e) {
         reset();
+        unselectPoints();
         selectedArea.setWidth(0);
         startPoint = new Point2D(e.getX(), e.getY());
-        if(!target.getChildren().contains(selectedArea))
-            target.getChildren().add(selectedArea);
+        target.getChildren().add(selectedArea);
     }
 
     @Override
@@ -109,18 +109,21 @@ public class SelectTool extends Tool {
         if(target != null){
             if(target.getChildren().contains(selectedArea))
                 target.getChildren().remove(selectedArea);
-            target.getChildren()
-                .stream()
-                .forEach((n) -> {
-                    if(n instanceof Room){
-                        Room r = (Room)n;
-                        r.getControlPoints()
-                            .stream()
-                            .forEach( (cp) -> {
-                               cp.setSelected(false);
-                            });
-                    }
-                });
         }
+    }
+    
+    public void unselectPoints(){
+        target.getChildren()
+            .stream()
+            .forEach( (n) -> {
+                if(n instanceof Room){
+                    Room r = (Room)n;
+                    r.getControlPoints()
+                        .stream()
+                        .forEach( (cp) -> {
+                            cp.setSelected(false);
+                        });
+                }
+            });
     }
 }

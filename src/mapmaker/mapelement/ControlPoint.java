@@ -64,16 +64,20 @@ public class ControlPoint extends Circle {
     public void setPosition(Double x, Double y){
         setCenterX(x);
         setCenterY(y);
-        owner.updateShape();
+        owner.fixToPoints();
     }
     
     public void setX(double x){
         super.setCenterX(x);
-        owner.updateShape();
+        owner.fixToPoints();
     }
     
     public void setY(double y){
         super.setCenterY(y);
-        owner.updateShape();
+        owner.fixToPoints();
+    }
+    
+    public void returnToOwner(){
+        owner.addControlPoint(this);
     }
 }

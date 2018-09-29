@@ -3,6 +3,7 @@ package mapmaker.tool;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import mapmaker.mapelement.ControlPoint;
@@ -47,9 +48,13 @@ public class MoveTool extends Tool {
     @Override
     public void mouseReleased(MouseEvent e) {
         target.getChildren().remove(cpGroup);
-        target.getChildren().addAll(cpGroup.getChildren());
+        //I know this is a bit roundabuot but it is to avoid a concurrent modification exception
+        Object nodes[] = cpGroup.getChildren().toArray();
+        for(Object n : nodes){
+            ControlPoint cp = (ControlPoint) n;
+            cp.returnToOwner();
+        }
         cpGroup.getChildren().clear();
-        target = null;
     }
 
     @Override
@@ -90,6 +95,5 @@ public class MoveTool extends Tool {
     
     @Override
     public void reset() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

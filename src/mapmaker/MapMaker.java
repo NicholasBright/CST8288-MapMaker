@@ -267,6 +267,7 @@ public class MapMaker extends Application {
         
         mapArea.getRooms().addListener((ListChangeListener.Change<? extends Room> c) -> {
             while(c.next()){
+                System.out.println("Hello!");
                 c.getAddedSubList()
                  .stream()
                  .forEach(r -> {

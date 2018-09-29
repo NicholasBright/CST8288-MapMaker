@@ -1,10 +1,18 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package mapmaker.mapelement;
 
-import java.util.ArrayList;
+import java.util.List;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.BooleanPropertyBase;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.Point2D;
+import javafx.scene.Parent;
 import javafx.scene.shape.Polygon;
 import javafx.scene.transform.Rotate;
 
@@ -12,91 +20,98 @@ import javafx.scene.transform.Rotate;
  *
  * @author nick
  */
-public final class Room extends Polygon{
-    int numSides;
-    double sideLength;
-    Rotate rotation = new Rotate();
-    ArrayList<ControlPoint> controlPoints = new ArrayList<>();
-    
-    private final BooleanProperty highlighted = new BooleanPropertyBase(false) {
-        @Override
-        public void invalidated() {
-            pseudoClassStateChanged(HIGHLIGHTED_PSEUDO_CLASS, get());
-        }
-        
-        @Override
-        public Object getBean() {
-            return Room.this;
-        }
-
-        @Override
-        public String getName() {
-            return "highlighted";
-        }
-    };
-            
+public final class Room extends Parent {
     private static PseudoClass HIGHLIGHTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("highlighted");
     
-    public Room(int numSides, double sideLength, Point2D ... startPoints){
-        rotation.setAngle(0);
-        this.getTransforms().add(rotation);
-        updateShape(numSides, sideLength, startPoints);
-        this.getStyleClass().add("room");
+    int numSides;
+    double sideLength;
+    ObservableList<ControlPoint> controlPoints = FXCollections.observableArrayList();
+    RoomShape internalShape = new RoomShape();
+    
+    private class RoomShape extends Polygon{
+        private final BooleanProperty highlighted = new SimpleBooleanProperty(false) {
+            @Override
+            public void invalidated() {
+                pseudoClassStateChanged(HIGHLIGHTED_PSEUDO_CLASS, get());
+            }
+
+            @Override
+            public Object getBean() {
+                return internalShape;
+            }
+
+            @Override
+            public String getName() {
+                return "highlighted";
+            }
+        };
+        
+        public RoomShape(){
+            super();
+            getStyleClass().add("room");
+        }
+    
+        public boolean isHighlighted(){
+            return this.highlighted.get();
+        }
+
+        public void setHighlighted(boolean highlighted){
+            this.highlighted.set(highlighted);
+        }
     }
     
-    public Room(int numSides, double sideLength, Double ... startPoints){
-        rotation.setAngle(0);
-        this.getTransforms().add(rotation);
-        updateShape(numSides, sideLength, startPoints);
-        this.getStyleClass().add("room");
+    public Room(int numSides, double sideLength, Double startX, Double startY){
+        this(numSides, sideLength, new Point2D(startX, startY));
     }
     
-    public int getNumSides(){ return numSides;}
-    public double getSideLength(){ return sideLength;}
-    
-    public void updateShape(int numSides, double sideLength){
-        updateShape(numSides, sideLength, (Double[]) super.getPoints().toArray());
+    public Room(int numSides, double sideLength, Point2D startPoint){
+        this(numSides, sideLength, startPoint, new Point2D(startPoint.getX() + sideLength, startPoint.getY()));
     }
     
-    public void updateShape(int numSides, double sideLength, Double ... pointPieces) throws ArrayIndexOutOfBoundsException {
-        if( pointPieces.length < 2) throw new ArrayIndexOutOfBoundsException("At least 2 doubles must be provided to form a start point");
-        else if( pointPieces.length < 4)
-            updateShape(numSides, sideLength, new Point2D(pointPieces[0],pointPieces[1]));
-        else if( pointPieces.length >= 4)
-            updateShape(numSides, sideLength, new Point2D(pointPieces[0],pointPieces[1]), new Point2D(pointPieces[2],pointPieces[3]));
+    public Room(int numSides, Point2D startPoint, Point2D firstSideEndPoint){
+        this(numSides, firstSideEndPoint.distance(startPoint), startPoint, firstSideEndPoint);
     }
     
-    public void updateShape(int numSides, double sideLength, Point2D ... startPoints){
-        if(numSides < 1) numSides = 1;
+    public Room(int numSides, double sideLength, Point2D startPoint, Point2D firstSideEndPoint){
+        internalShape.getStyleClass().add("room");
+        setShape(numSides, sideLength, startPoint, firstSideEndPoint);
+    }
+    
+    public final void setShape(Point2D startPoint, Point2D endPoint) throws IllegalArgumentException{
+        setShape(getNumSides(), endPoint.distance(startPoint), startPoint, endPoint);
+    }
+    
+    public final void setShape(Point2D startPoint) throws IllegalArgumentException{
+        setShape(getNumSides(), getSideLength(), startPoint);
+    }
+    
+    public final void setShape(int numSides, double sideLength, Point2D startPoint) throws IllegalArgumentException{
+        this.setShape(numSides, sideLength, startPoint, new Point2D(startPoint.getX()+sideLength, startPoint.getY()));
+    }
+    
+    public final void setShape(int numSides, double sideLength, Point2D startPoint, Point2D endPoint) throws IllegalArgumentException{
+        if(numSides < 0)
+            throw new IllegalArgumentException("numSides cannot be less than 0");
+        if(sideLength < 0)
+            throw new IllegalArgumentException("sideLength cannot be less than 0");
+        if(startPoint == null)
+            throw new IllegalArgumentException("startPoint cannot be null");
+        if(endPoint == null)
+            throw new IllegalArgumentException("endPoint cannot be null");
         
         this.numSides = numSides;
         this.sideLength = sideLength;
-        
-        super.getPoints().clear();
+        getChildren().clear();
+        internalShape.getPoints().clear();
+        controlPoints.clear();
         
         Double points[] = new Double[numSides*2];
-        if(controlPoints.size() > 0)
-            controlPoints.get(0).setPosition(startPoints[0]);
-        else
-            controlPoints.add(new ControlPoint(this, startPoints[0]));
-        points[0] = startPoints[0].getX();
-        points[1] = startPoints[0].getY();
-        if(startPoints.length > 1){
-            points[2] = startPoints[1].getX();
-            points[3] = startPoints[1].getY();
-            if(controlPoints.size() > 1)
-                controlPoints.get(1).setPosition(startPoints[1]);
-            else
-                controlPoints.add(new ControlPoint(this, startPoints[1]));
-        }
-        else {
-            points[2] = startPoints[0].getX() + sideLength;
-            points[3] = startPoints[0].getY();
-            if(controlPoints.size() > 1)
-                controlPoints.get(1).setPosition(points[2], points[3]);
-            else
-                controlPoints.add(new ControlPoint(this, points[2], points[3]));
-        }
+        points[0] = startPoint.getX();
+        points[1] = startPoint.getY();
+        controlPoints.add(new ControlPoint(this, startPoint));
+        points[2] = endPoint.getX();
+        points[3] = endPoint.getY();
+        controlPoints.add(new ControlPoint(this, endPoint));
         
         Point2D beforeLast;
         Point2D last;
@@ -108,33 +123,49 @@ public final class Room extends Polygon{
                     beforeLast.getY() - last.getY());
             points[i] = newVector.getX() + last.getX();
             points[i+1] = newVector.getY() + last.getY();
-            if(controlPoints.size() > i/2)
-                controlPoints.get(i/2).setPosition(points[i], points[++i]);
-            else
-                controlPoints.add(new ControlPoint(this, points[i], points[++i]));
+            controlPoints.add(new ControlPoint(this, points[i], points[++i]));
         }
         
-        super.getPoints().addAll(points);
+        internalShape.getPoints().addAll(points);
+        getChildren().add(internalShape);
+        getChildren().addAll(controlPoints);
     }
     
-    public void updateShape(){
-        super.getPoints().clear();
-        controlPoints
-            .stream()
-            .forEach( (cp) -> {
-                super.getPoints().addAll(cp.getCenterX(), cp.getCenterY());
-            });
-    }
-    
-    public final ArrayList<ControlPoint> getControlPoints(){
+    public List<ControlPoint> getControlPoints(){
         return controlPoints;
     }
     
+    public int getNumSides(){
+        return numSides;
+    }
+    
+    public double getSideLength(){
+        return sideLength;
+    }
+    
     public boolean isHighlighted(){
-        return this.highlighted.get();
+        return internalShape.isHighlighted();
     }
     
     public void setHighlighted(boolean highlighted){
-        this.highlighted.set(highlighted);
+        internalShape.setHighlighted(highlighted);
+    }
+    
+    public void fixToPoints() {
+        internalShape.getPoints().clear();
+        controlPoints
+            .stream()
+            .forEach( (cp) -> {
+                internalShape.getPoints().addAll(cp.getCenterX(), cp.getCenterY());
+            });
+    }
+    
+    public void addControlPoint(ControlPoint cp) {
+        if(!getChildren().contains(cp))
+            getChildren().add(cp);
+        if(!controlPoints.contains(cp)){
+            controlPoints.add(cp);
+            internalShape.getPoints().addAll(cp.getCenterX(), cp.getCenterY());
+        }
     }
 }

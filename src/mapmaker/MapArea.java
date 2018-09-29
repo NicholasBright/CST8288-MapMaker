@@ -1,6 +1,5 @@
 package mapmaker;
 
-import java.util.ArrayList;
 import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -38,11 +37,6 @@ public class MapArea extends Pane {
             ToolState.getToolState().getActiveTool().mouseDragged(e);
         });
         
-        addEventHandler(MouseEvent.MOUSE_EXITED, e -> {
-            ToolState.getToolState().getActiveTool().reset();
-        });
-        
-        
         super.getChildren().addListener((ListChangeListener.Change<? extends Node> c) -> {
             while(c.next()){
                 if(c.wasAdded()){
@@ -56,7 +50,7 @@ public class MapArea extends Pane {
                         });
                 }
                 else if(c.wasRemoved()){
-                    c.getAddedSubList()
+                    c.getRemoved()
                         .stream()
                         .forEach((n) -> {
                             if(n instanceof Room){

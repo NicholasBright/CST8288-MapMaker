@@ -5,8 +5,8 @@
  */
 package mapmaker.tool;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
+import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import mapmaker.mapelement.Room;
@@ -27,18 +27,19 @@ public class EraseTool extends Tool {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        List<Room> toRemove = new ArrayList<>();
-        target.getChildren()
-            .stream()
-            .limit(1)
-            .forEach((n) -> {
-                if(n instanceof Room){
-                    Room r = (Room)n;
-                    if(r.contains(e.getX(), e.getY()))
-                        toRemove.add(r);
+        Room toRemove = null;
+        Iterator<Node> i = target.getChildren().iterator();
+        while(i.hasNext()){
+            Node n = i.next();
+            if(n instanceof Room){
+                Room r = (Room) n;
+                if(r.contains(e.getX(), e.getY())){
+                    toRemove = r;
                 }
-            });
-        target.getChildren().removeAll(toRemove);
+            }
+        }
+        if(toRemove != null)
+            target.getChildren().remove(toRemove);
     }
 
     @Override
@@ -51,6 +52,5 @@ public class EraseTool extends Tool {
     
     @Override
     public void reset() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
