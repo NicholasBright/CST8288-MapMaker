@@ -49,6 +49,7 @@ public class SelectTool extends Tool {
                             .forEach((cp) -> {
                                 cp.setSelected(true);
                             });
+                        r.setHighlighted(true);
                     }
                 }
             });

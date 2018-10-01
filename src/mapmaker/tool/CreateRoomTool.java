@@ -14,6 +14,7 @@ public final class CreateRoomTool extends Tool {
     int sides;
     Point2D startPoint;
     Room createdRoom;
+    Boolean customFlag = false;
     
     public CreateRoomTool (Pane target){
         super("Room Tool", "Creates rooms", target);
@@ -21,33 +22,43 @@ public final class CreateRoomTool extends Tool {
     
     @Override
     public void mousePressed(MouseEvent e) {
-        this.sides = (Integer) ToolState.getToolState().getOption(0);
-        startPoint = new Point2D(e.getX(), e.getY());
-        createdRoom = new Room(sides, 1.0, startPoint.getX(), startPoint.getY());
-        target.getChildren().add(createdRoom);
+        Object option = ToolState.getToolState().getOption(0);
+        if(option instanceof Integer)
+            sides = (Integer) option;
+        if(sides > 0){
+            this.sides = (Integer) ToolState.getToolState().getOption(0);
+            startPoint = new Point2D(e.getX(), e.getY());
+            createdRoom = new Room(sides, 1.0, startPoint);
+            target.getChildren().add(createdRoom);
+        }
+        else if(sides < 0 && customFlag == false){
+            customFlag = true;
+            createdRoom = new Room(e.getX(), e.getY());
+            target.getChildren().add(createdRoom);
+        }
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {
+        if(customFlag){
+            createdRoom.addControlPoint(new ControlPoint(createdRoom, e.getX(), e.getY()));
+        }
+    }
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        if(customFlag)
+            return;
         mouseDragged(e);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
+        if(customFlag)
+            return;
+        
         Point2D newEnd = new Point2D(e.getX(), e.getY());
-        Room newRoom = new Room(createdRoom.getNumSides(), startPoint, newEnd);
-        /*boolean inBoundsFlag = true;
-        for(ControlPoint cp : newRoom.getControlPoints()){
-            if(! target.getBoundsInLocal().contains(cp.getBoundsInParent()))
-                inBoundsFlag = false;
-        }
-        if(inBoundsFlag)
-            createdRoom.setShape(startPoint, newEnd);*/
-        if(target.getBoundsInLocal().contains(newRoom.getBoundsInParent()))
-            createdRoom.setShape(startPoint, newEnd);
+        createdRoom.setShape(startPoint, newEnd);
     }
     
     @Override

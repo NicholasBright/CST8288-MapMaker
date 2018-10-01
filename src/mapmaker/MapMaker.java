@@ -18,6 +18,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -29,6 +30,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToolBar;
@@ -37,6 +39,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.transform.Scale;
 import javafx.stage.Stage;
 import mapmaker.mapelement.Room;
 import mapmaker.tool.CreateRoomTool;
@@ -54,7 +57,7 @@ import mapmaker.tool.ToolState;
  */
 public class MapMaker extends Application {
     private MapArea                 mapArea;
-    
+    private ScrollPane              centerPane;
     private Scene                   rootScene;
     private BorderPane              rootPane;
     private MenuBar                 menuBar;
@@ -73,7 +76,6 @@ public class MapMaker extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        mapArea = new MapArea();
         
         messageProperty = new SimpleStringProperty("Enjoy the map maker!");
         
@@ -103,6 +105,10 @@ public class MapMaker extends Application {
     
     public Pane buildRootPane(){
         rootPane = new BorderPane();
+        
+        mapArea = new MapArea();
+        
+        centerPane = new ScrollPane(mapArea);
         
         menuBar = createMenuBar(
             createMenu("File",
@@ -227,6 +233,10 @@ public class MapMaker extends Application {
             createMenuItem("Hexagon", e -> {
                     ToolState.getToolState().setActiveTool(new CreateRoomTool(mapArea), 6);
                     messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
+            }),
+            createMenuItem("Custom Room", e -> {
+                    ToolState.getToolState().setActiveTool(new CreateRoomTool(mapArea), -1);
+                    messageProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
             })
         );
         
@@ -267,7 +277,6 @@ public class MapMaker extends Application {
         
         mapArea.getRooms().addListener((ListChangeListener.Change<? extends Room> c) -> {
             while(c.next()){
-                System.out.println("Hello!");
                 c.getAddedSubList()
                  .stream()
                  .forEach(r -> {
@@ -326,11 +335,14 @@ public class MapMaker extends Application {
         
         detailsBox.getChildren().addAll(roomListView, detailsPane);
         
+        mapArea.minWidthProperty().bind(rootPane.widthProperty().subtract(toolBar.widthProperty().add(detailsBox.widthProperty())).divide(mapArea.getScaleX()));
+        mapArea.minHeightProperty().bind(rootPane.heightProperty().subtract(menuBar.heightProperty().add(statusBar.heightProperty())).divide(mapArea.getScaleY()));
+        
         rootPane.setTop(menuBar);
         rootPane.setBottom(statusBar);
         rootPane.setLeft(toolBar);
         rootPane.setRight(detailsBox);
-        rootPane.setCenter(mapArea);
+        rootPane.setCenter(centerPane);
         return rootPane;
     }
     

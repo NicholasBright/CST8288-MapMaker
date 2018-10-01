@@ -117,3 +117,7 @@
     -fx-border-width:           0px 0px 0px 1px;
     -fx-border-color:           black;
 }
+
+#MapArea {
+    -fx-background-color: white;
+}

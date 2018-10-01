@@ -19,7 +19,9 @@ public class MapArea extends Pane {
     private static ObservableList<Room> rooms = FXCollections.observableArrayList();
     
     public MapArea(){
+        super();
         setId("MapArea");
+        
         
         addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
             ToolState.getToolState().getActiveTool().mousePressed(e);

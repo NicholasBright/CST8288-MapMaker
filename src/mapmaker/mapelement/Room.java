@@ -60,6 +60,15 @@ public final class Room extends Parent {
         }
     }
     
+    public Room(Point2D startPoint){
+        this(startPoint.getX(), startPoint.getY());
+    }
+    
+    public Room(Double x, Double y){
+        internalShape = new RoomShape();
+        internalShape.getPoints().addAll(x, y);
+    }
+    
     public Room(int numSides, double sideLength, Double startX, Double startY){
         this(numSides, sideLength, new Point2D(startX, startY));
     }
@@ -73,7 +82,6 @@ public final class Room extends Parent {
     }
     
     public Room(int numSides, double sideLength, Point2D startPoint, Point2D firstSideEndPoint){
-        internalShape.getStyleClass().add("room");
         setShape(numSides, sideLength, startPoint, firstSideEndPoint);
     }
     
@@ -165,7 +173,24 @@ public final class Room extends Parent {
             getChildren().add(cp);
         if(!controlPoints.contains(cp)){
             controlPoints.add(cp);
-            internalShape.getPoints().addAll(cp.getCenterX(), cp.getCenterY());
+            ObservableList<Double> oldPoints = internalShape.getPoints();
+            oldPoints.addAll(cp.getCenterX(), cp.getCenterY());
+            this.getChildren().remove(internalShape);
+            internalShape = new RoomShape();
+            internalShape.getPoints().addAll(oldPoints);
+            this.getChildren().add(0,internalShape);
+        }
+    }
+    
+    public void translate(double xTrans, double yTrans){
+        int i=0;
+        while(i+1 < internalShape.getPoints().size()){
+            internalShape.getPoints().set(i, internalShape.getPoints().get(i) + xTrans);
+            i++;
+            internalShape.getPoints().set(i, internalShape.getPoints().get(i) + yTrans);
+            ControlPoint cp = controlPoints.get(i/2);
+            cp.setCenterX(cp.getCenterX() + xTrans);
+            cp.setCenterY(cp.getCenterY() + yTrans);
         }
     }
 }
