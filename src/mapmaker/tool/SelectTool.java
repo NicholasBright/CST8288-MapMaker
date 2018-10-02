@@ -18,6 +18,7 @@ import mapmaker.mapelement.Room;
 public class SelectTool extends Tool {
     Point2D startPoint;
     Rectangle selectedArea;
+    boolean draggedFlag;
     
     public SelectTool(Pane target){
         super("Select Tool", "Click and drag to select Control Points, or click on a Room to select all of it's Control Points", target);
@@ -30,45 +31,48 @@ public class SelectTool extends Tool {
     @Override
     public void mousePressed(MouseEvent e) {
         reset();
-        unselectPoints();
         selectedArea.setWidth(0);
         startPoint = new Point2D(e.getX(), e.getY());
         target.getChildren().add(selectedArea);
+        draggedFlag = false;
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        target.getChildren()
-            .stream()
-            .forEach((n) -> {
-                if(n instanceof Room){
-                    Room r = (Room)n;
-                    if(r.contains(startPoint) && r.contains(new Point2D(e.getX(), e.getY()))){
-                        r.getControlPoints()
-                            .stream()
-                            .forEach((cp) -> {
-                                cp.setSelected(true);
-                            });
-                        r.setHighlighted(true);
+        if(!draggedFlag){
+            target.getChildren()
+                .stream()
+                .forEach((n) -> {
+                    if(n instanceof Room){
+                        Room r = (Room)n;
+                        boolean clicked = (r.contains(startPoint) && r.contains(new Point2D(e.getX(), e.getY())));
+                        if(!(e.isShiftDown() && !clicked))
+                            r.setHighlighted(clicked);
                     }
-                }
-            });
-        target.getChildren().remove(selectedArea);
+                });
+            target.getChildren().remove(selectedArea);
+        }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        target.getChildren().stream().forEach((n) -> {
-            if(n instanceof Room){
-                Room r = (Room)n;
-                r.getControlPoints()
-                    .stream()
-                    .filter((cp) -> (selectedArea.getBoundsInParent().intersects(cp.getBoundsInParent())))
-                    .forEach((cp) -> {
-                        cp.setSelected(true);
-                });
-            }
-        });
+        if(draggedFlag){
+            target.getChildren().stream().forEach((n) -> {
+                if(n instanceof Room){
+                    Room r = (Room)n;
+                    if(!e.isShiftDown())
+                        r.setHighlighted(false);
+                    r.getControlPoints()
+                        .stream()
+                        .forEach((cp) -> {
+                            boolean clicked = selectedArea.getBoundsInParent().intersects(cp.getBoundsInParent());
+                            if(!(e.isShiftDown() && !clicked))
+                                cp.setSelected(clicked);
+                    });
+                }
+            });
+            target.getChildren().remove(selectedArea);
+        }
     }
 
     @Override
@@ -103,6 +107,8 @@ public class SelectTool extends Tool {
             selectedArea.setY(eY);
             selectedArea.setHeight(startPoint.getY()-eY);
         }
+        
+        draggedFlag = (selectedArea.getWidth() > 10 || selectedArea.getHeight() > 10);
     }
     
     @Override
@@ -119,11 +125,7 @@ public class SelectTool extends Tool {
             .forEach( (n) -> {
                 if(n instanceof Room){
                     Room r = (Room)n;
-                    r.getControlPoints()
-                        .stream()
-                        .forEach( (cp) -> {
-                            cp.setSelected(false);
-                        });
+                    r.setHighlighted(false);
                 }
             });
     }

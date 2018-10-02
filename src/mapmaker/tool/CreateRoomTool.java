@@ -56,9 +56,10 @@ public final class CreateRoomTool extends Tool {
     public void mouseDragged(MouseEvent e) {
         if(customFlag)
             return;
-        
         Point2D newEnd = new Point2D(e.getX(), e.getY());
-        createdRoom.setShape(startPoint, newEnd);
+        if((new Room(sides, startPoint, newEnd)).getBoundsInLocal().getMinX() > 0 &&
+           (new Room(sides, startPoint, newEnd)).getBoundsInLocal().getMinY() > 0    )
+            createdRoom.setShape(startPoint, newEnd);
     }
     
     @Override

@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -18,7 +19,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -39,7 +39,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.scene.transform.Scale;
 import javafx.stage.Stage;
 import mapmaker.mapelement.Room;
 import mapmaker.tool.CreateRoomTool;
@@ -109,6 +108,8 @@ public class MapMaker extends Application {
         mapArea = new MapArea();
         
         centerPane = new ScrollPane(mapArea);
+        /*centerPane.vminProperty().bind(null);
+        centerPane.setHmin(-1000);*/
         
         menuBar = createMenuBar(
             createMenu("File",
@@ -280,34 +281,20 @@ public class MapMaker extends Application {
                 c.getAddedSubList()
                  .stream()
                  .forEach(r -> {
-                    String polyName;
-                    switch(r.getNumSides()){
-                        case 2:
-                            polyName = "Line";
-                            break;
-                        case 3: 
-                            polyName = "Triangle";
-                            break;
-                        case 4:
-                            polyName = "Rectangle";
-                            break;
-                        case 5:
-                            polyName = "Pentagon";
-                            break;
-                        case 6:
-                            polyName = "Hexagon";
-                            break;
-                        default:
-                            polyName = "Polygon";
-                            break;
-                    }
-                    Label newRoomLabel = new Label(polyName);
+                    Label newRoomLabel = new Label();
+                    newRoomLabel.textProperty().bind(r.polyNameProperty());
                     newRoomLabel.setUserData(r);
-                    newRoomLabel.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> {
-                        ((Room) newRoomLabel.getUserData()).setHighlighted(true);
+                    newRoomLabel.addEventHandler(MouseEvent.MOUSE_CLICKED, (e) -> {
+                        if(!e.isShiftDown()){
+                            mapArea.getRooms().stream().forEach((room) -> {
+                            room.setHighlighted(false);
+                            });
+                        }
+                        Room room = ((Room) newRoomLabel.getUserData());
+                        room.setHighlighted(true);
                     });
-                    newRoomLabel.addEventHandler(MouseEvent.MOUSE_EXITED, e -> {
-                        ((Room) newRoomLabel.getUserData()).setHighlighted(false);
+                    r.highlightedProperty().addListener((o, oV, nV) -> {
+                        newRoomLabel.setStyle((nV ? "-fx-background-color: gold" : null));
                     });
                     roomList.add(newRoomLabel);
                 });
@@ -334,9 +321,12 @@ public class MapMaker extends Application {
         detailsPane.prefWidthProperty().bind(detailsBox.widthProperty());
         
         detailsBox.getChildren().addAll(roomListView, detailsPane);
-        
-        mapArea.minWidthProperty().bind(rootPane.widthProperty().subtract(toolBar.widthProperty().add(detailsBox.widthProperty())).divide(mapArea.getScaleX()));
-        mapArea.minHeightProperty().bind(rootPane.heightProperty().subtract(menuBar.heightProperty().add(statusBar.heightProperty())).divide(mapArea.getScaleY()));
+        mapArea.minWidthProperty().bind(
+                rootPane.widthProperty().subtract(toolBar.widthProperty().add(detailsBox.widthProperty())).divide(mapArea.getScaleX())
+        );
+        mapArea.minHeightProperty().bind(
+                rootPane.heightProperty().subtract(menuBar.heightProperty().add(statusBar.heightProperty())).divide(mapArea.getScaleY())
+        );
         
         rootPane.setTop(menuBar);
         rootPane.setBottom(statusBar);

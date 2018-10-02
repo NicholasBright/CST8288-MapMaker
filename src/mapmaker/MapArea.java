@@ -22,21 +22,8 @@ public class MapArea extends Pane {
         super();
         setId("MapArea");
         
-        
-        addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
-            ToolState.getToolState().getActiveTool().mousePressed(e);
-        });
-        
-        addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-            ToolState.getToolState().getActiveTool().mouseClicked(e);
-        });
-        
-        addEventHandler(MouseEvent.MOUSE_RELEASED, e -> {
-            ToolState.getToolState().getActiveTool().mouseReleased(e);
-        });
-        
-        addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> {
-            ToolState.getToolState().getActiveTool().mouseDragged(e);
+        addEventHandler(MouseEvent.ANY, e -> {
+            ToolState.getToolState().getActiveTool().handleMouseEvent(e);
         });
         
         super.getChildren().addListener((ListChangeListener.Change<? extends Node> c) -> {

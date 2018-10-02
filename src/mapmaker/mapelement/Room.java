@@ -7,8 +7,11 @@ package mapmaker.mapelement;
 
 import java.util.List;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.Point2D;
@@ -27,9 +30,13 @@ public final class Room extends Parent {
     double sideLength;
     ObservableList<ControlPoint> controlPoints = FXCollections.observableArrayList();
     RoomShape internalShape = new RoomShape();
+    SimpleStringProperty polygonNameProperty = new SimpleStringProperty();
+    
+    private final BooleanProperty highlighted = new SimpleBooleanProperty(false);
     
     private class RoomShape extends Polygon{
-        private final BooleanProperty highlighted = new SimpleBooleanProperty(false) {
+        
+        public final BooleanProperty highlighted = new SimpleBooleanProperty(false) {
             @Override
             public void invalidated() {
                 pseudoClassStateChanged(HIGHLIGHTED_PSEUDO_CLASS, get());
@@ -50,14 +57,6 @@ public final class Room extends Parent {
             super();
             getStyleClass().add("room");
         }
-    
-        public boolean isHighlighted(){
-            return this.highlighted.get();
-        }
-
-        public void setHighlighted(boolean highlighted){
-            this.highlighted.set(highlighted);
-        }
     }
     
     public Room(Point2D startPoint){
@@ -65,8 +64,7 @@ public final class Room extends Parent {
     }
     
     public Room(Double x, Double y){
-        internalShape = new RoomShape();
-        internalShape.getPoints().addAll(x, y);
+        this(0, 0, x, y);
     }
     
     public Room(int numSides, double sideLength, Double startX, Double startY){
@@ -74,7 +72,7 @@ public final class Room extends Parent {
     }
     
     public Room(int numSides, double sideLength, Point2D startPoint){
-        this(numSides, sideLength, startPoint, new Point2D(startPoint.getX() + sideLength, startPoint.getY()));
+        this(numSides, sideLength, startPoint, null);
     }
     
     public Room(int numSides, Point2D startPoint, Point2D firstSideEndPoint){
@@ -83,6 +81,8 @@ public final class Room extends Parent {
     
     public Room(int numSides, double sideLength, Point2D startPoint, Point2D firstSideEndPoint){
         setShape(numSides, sideLength, startPoint, firstSideEndPoint);
+        addListenerForCPList();
+        internalShape.highlighted.bind(highlighted);
     }
     
     public final void setShape(Point2D startPoint, Point2D endPoint) throws IllegalArgumentException{
@@ -104,8 +104,6 @@ public final class Room extends Parent {
             throw new IllegalArgumentException("sideLength cannot be less than 0");
         if(startPoint == null)
             throw new IllegalArgumentException("startPoint cannot be null");
-        if(endPoint == null)
-            throw new IllegalArgumentException("endPoint cannot be null");
         
         this.numSides = numSides;
         this.sideLength = sideLength;
@@ -113,28 +111,22 @@ public final class Room extends Parent {
         internalShape.getPoints().clear();
         controlPoints.clear();
         
-        Double points[] = new Double[numSides*2];
-        points[0] = startPoint.getX();
-        points[1] = startPoint.getY();
         controlPoints.add(new ControlPoint(this, startPoint));
-        points[2] = endPoint.getX();
-        points[3] = endPoint.getY();
-        controlPoints.add(new ControlPoint(this, endPoint));
-        
-        Point2D beforeLast;
-        Point2D last;
-        Rotate angleBetweenPoints = new Rotate(((numSides-2)*-180)/numSides);
-        for(int i=4;i<numSides*2;i++){
-            beforeLast = new Point2D(points[i-4], points[i-3]);
-            last = new Point2D(points[i-2], points[i-1]);
-            Point2D newVector = angleBetweenPoints.deltaTransform(beforeLast.getX() - last.getX(),
-                    beforeLast.getY() - last.getY());
-            points[i] = newVector.getX() + last.getX();
-            points[i+1] = newVector.getY() + last.getY();
-            controlPoints.add(new ControlPoint(this, points[i], points[++i]));
+        if(endPoint != null){
+            controlPoints.add(new ControlPoint(this, endPoint));
+
+            Point2D beforeLast = startPoint;
+            Point2D last = endPoint;
+            Rotate angleBetweenPoints = new Rotate(((numSides-2)*-180)/numSides);
+            for(int i=2;i<numSides;i++){
+                Point2D newVector = angleBetweenPoints.deltaTransform(beforeLast.getX() - last.getX(),
+                        beforeLast.getY() - last.getY());
+                beforeLast = last;
+                last = new Point2D(newVector.getX() + last.getX(), newVector.getY() + last.getY());
+                controlPoints.add(new ControlPoint(this, last.getX(), last.getY()));
+            }
         }
-        
-        internalShape.getPoints().addAll(points);
+        fixToPoints();
         getChildren().add(internalShape);
         getChildren().addAll(controlPoints);
     }
@@ -152,11 +144,22 @@ public final class Room extends Parent {
     }
     
     public boolean isHighlighted(){
-        return internalShape.isHighlighted();
+            return this.highlighted.get();
+        }
+
+    public void setHighlighted(boolean highlighted){
+        this.highlighted.set(highlighted);
+        controlPoints.stream().forEach((cp) -> {
+            cp.setSelected(highlighted);
+        });
     }
     
-    public void setHighlighted(boolean highlighted){
-        internalShape.setHighlighted(highlighted);
+    public BooleanProperty highlightedProperty(){
+        return highlighted;
+    }
+    
+    public ReadOnlyStringProperty polyNameProperty(){
+        return this.polygonNameProperty;
     }
     
     public void fixToPoints() {
@@ -173,11 +176,8 @@ public final class Room extends Parent {
             getChildren().add(cp);
         if(!controlPoints.contains(cp)){
             controlPoints.add(cp);
-            ObservableList<Double> oldPoints = internalShape.getPoints();
-            oldPoints.addAll(cp.getCenterX(), cp.getCenterY());
+            internalShape.getPoints().addAll(cp.getCenterX(), cp.getCenterY());
             this.getChildren().remove(internalShape);
-            internalShape = new RoomShape();
-            internalShape.getPoints().addAll(oldPoints);
             this.getChildren().add(0,internalShape);
         }
     }
@@ -192,5 +192,32 @@ public final class Room extends Parent {
             cp.setCenterX(cp.getCenterX() + xTrans);
             cp.setCenterY(cp.getCenterY() + yTrans);
         }
+    }
+    
+    private void addListenerForCPList(){
+        controlPoints.addListener((ListChangeListener.Change<? extends ControlPoint> c) -> {
+            String polyName;
+            switch(controlPoints.size()){
+                case 2:
+                    polyName = "Line";
+                    break;
+                case 3: 
+                    polyName = "Triangle";
+                    break;
+                case 4:
+                    polyName = "Rectangle";
+                    break;
+                case 5:
+                    polyName = "Pentagon";
+                    break;
+                case 6:
+                    polyName = "Hexagon";
+                    break;
+                default:
+                    polyName = "Polygon";
+                    break;
+            }
+            polygonNameProperty.set(polyName);
+        });
     }
 }

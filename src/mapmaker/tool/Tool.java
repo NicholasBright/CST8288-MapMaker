@@ -2,6 +2,7 @@ package mapmaker.tool;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringPropertyBase;
+import javafx.event.EventType;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 
@@ -61,5 +62,16 @@ public abstract class Tool{
     @Override
     public String toString(){
         return name;
+    }
+    
+    public void handleMouseEvent(MouseEvent e){
+        if(MouseEvent.MOUSE_PRESSED.equals(e.getEventType()))
+            mousePressed(e);
+        else if(MouseEvent.MOUSE_CLICKED.equals(e.getEventType()))
+            mouseClicked(e);
+        else if(MouseEvent.MOUSE_RELEASED.equals(e.getEventType()))
+            mouseReleased(e);
+        else if(MouseEvent.MOUSE_DRAGGED.equals(e.getEventType()))
+            mouseDragged(e);
     }
 }
