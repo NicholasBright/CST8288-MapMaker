@@ -112,7 +112,7 @@
     -fx-border-color:           black;
 }
 
-#Details {
+#OptionsPane {
     -fx-border-style-top:       solid;
     -fx-border-width:           0px 0px 0px 1px;
     -fx-border-color:           black;

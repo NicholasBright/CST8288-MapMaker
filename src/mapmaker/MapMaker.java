@@ -11,7 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -33,13 +33,17 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.ToolBar;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 import mapmaker.mapelement.Room;
 import mapmaker.tool.CreateRoomTool;
 import mapmaker.tool.DoorTool;
@@ -269,6 +273,12 @@ public class MapMaker extends Application {
         detailsBox.prefHeightProperty().bind(rootPane.heightProperty());
         detailsBox.prefWidthProperty().bind(rootPane.widthProperty().divide(5.0));
         
+        ListView<Pair<String,Node>> optionsList = new ListView<Pair<String,Node>>();
+        optionsList.setId("OptionsPane");
+        optionsList.prefHeightProperty().bind(detailsBox.heightProperty().multiply(0.5));
+        optionsList.prefWidthProperty().bind(detailsBox.widthProperty());
+        optionsList.setCellFactory(c -> new OptionListCell());
+        
         ObservableList<Label> roomList = FXCollections.observableArrayList();
         ListView<Label> roomListView = new ListView<>(roomList);
         roomListView.setId("RoomList");
@@ -292,6 +302,8 @@ public class MapMaker extends Application {
                         }
                         Room room = ((Room) newRoomLabel.getUserData());
                         room.setHighlighted(true);
+                        optionsList.getItems().clear();
+                        optionsList.setItems(room.getModifiableOptionList());
                     });
                     r.highlightedProperty().addListener((o, oV, nV) -> {
                         newRoomLabel.setStyle((nV ? "-fx-background-color: gold" : null));
@@ -315,12 +327,7 @@ public class MapMaker extends Application {
             }
         });
         
-        GridPane detailsPane = new GridPane();
-        detailsPane.setId("Details");
-        detailsPane.prefHeightProperty().bind(detailsBox.heightProperty().multiply(0.5));
-        detailsPane.prefWidthProperty().bind(detailsBox.widthProperty());
-        
-        detailsBox.getChildren().addAll(roomListView, detailsPane);
+        detailsBox.getChildren().addAll(roomListView, optionsList);
         mapArea.minWidthProperty().bind(
                 rootPane.widthProperty().subtract(toolBar.widthProperty().add(detailsBox.widthProperty())).divide(mapArea.getScaleX())
         );
