@@ -47,7 +47,7 @@ public final class Room extends Parent implements ModifiableOptions {
     public ObservableList<Pair<String, Node>> getModifiableOptionList() {
         ObservableList<Pair<String,Node>> optionList = FXCollections.observableArrayList();
         
-        ComboBox<String> regularCB = new ComboBox<String>(FXCollections.observableArrayList("True","False"));
+        ComboBox<String> regularCB = new ComboBox<>(FXCollections.observableArrayList("True","False"));
         if(regularProperty().get())
             regularCB.getSelectionModel().select(0);
         else
@@ -57,7 +57,7 @@ public final class Room extends Parent implements ModifiableOptions {
             regularProperty().set(regularCB.getValue().equals("True"));
         });
         
-        Spinner<Integer> sidesSpinner = new Spinner<Integer>();
+        Spinner<Integer> sidesSpinner = new Spinner<>();
         sidesSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,10,numSidesProperty().get()));
         sidesSpinner.valueProperty().addListener((o, oV, nV) -> {
             setShape(nV,sideLength,
@@ -67,8 +67,8 @@ public final class Room extends Parent implements ModifiableOptions {
                                 controlPoints.get(1).getCenterY()));
         });
         
-        optionList.addAll(new Pair<String,Node>("Regular",regularCB),
-                          new Pair<String,Node>("Num Sides",sidesSpinner));
+        optionList.add(new Pair<>("Regular",regularCB));
+        optionList.add(new Pair<>("Num Sides",sidesSpinner));
         
         return optionList;
     }
