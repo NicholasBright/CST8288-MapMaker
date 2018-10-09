@@ -5,14 +5,13 @@
  */
 package mapmaker;
 
-import javafx.collections.ObservableList;
 import javafx.scene.Node;
-import javafx.util.Pair;
+import javafx.scene.control.ListView;
 
 /**
  *
  * @author owner
  */
 public interface ModifiableOptions {
-    public ObservableList<Pair<String, Node>> getModifiableOptionList();
+    public void populateListViewWithOptions(ListView<Node> lv);
 }

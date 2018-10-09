@@ -3,7 +3,6 @@ package mapmaker.tool;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import mapmaker.mapelement.ControlPoint;
@@ -48,7 +47,6 @@ public class MoveTool extends Tool {
     @Override
     public void mouseReleased(MouseEvent e) {
         target.getChildren().remove(cpGroup);
-        //I know this is a bit roundabuot but it is to avoid a concurrent modification exception
         Object nodes[] = cpGroup.getChildren().toArray();
         for(Object n : nodes){
             ControlPoint cp = (ControlPoint) n;

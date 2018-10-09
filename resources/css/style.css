@@ -91,9 +91,9 @@
 }
 
 .room:highlighted {
-    -fx-fill:                   gold;
     -fx-stroke:                 red;
-    -fx-stroke-dash-array:      25 25;
+    -fx-stroke-width:           4px;
+    -fx-stroke-dash-array:      10 25;
 }
 
 .control-point {
