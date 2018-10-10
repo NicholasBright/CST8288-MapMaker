@@ -7,9 +7,9 @@ package mapmaker.mapelement;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Pattern;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -20,120 +20,66 @@ import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.css.PseudoClass;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
-import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.shape.Polygon;
 import javafx.scene.transform.Rotate;
-import javafx.util.Pair;
-import mapmaker.ModifiableOptions;
 
 /**
  *
  * @author nick
  */
-public final class Room extends Parent implements ModifiableOptions {
-    private static PseudoClass HIGHLIGHTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("highlighted");
+public final class Room extends Parent implements ModifiableProperties, TranslatableElement, SelectableElement {
+    private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     
-    double sideLength;
-    ObservableList<ControlPoint> controlPoints = FXCollections.observableArrayList();
-    RoomShape internalShape = new RoomShape();
-    SimpleStringProperty polygonNameProperty = new SimpleStringProperty();
+    private double sideLength;
+    private ObservableList<ControlPoint> controlPoints = FXCollections.observableArrayList();
+    private RoomShape internalShape = new RoomShape();
     
-    private final BooleanProperty highlightedProperty = new SimpleBooleanProperty(false);
-    private final BooleanProperty regularProperty = new SimpleBooleanProperty(true);
-    private final IntegerProperty numSidesProperty = new SimpleIntegerProperty();
+    private final SimpleStringProperty polygonNameProperty = new SimpleStringProperty(){
+        @Override
+        public String getName(){
+            return "Polygon Name";
+        }
+    };
+    
+    private final BooleanProperty selectedProperty = new SimpleBooleanProperty(false){
+        @Override
+        public String getName(){
+            return "Selected";
+        }
+    };
+    private final BooleanProperty regularProperty = new SimpleBooleanProperty(true){
+        @Override
+        public String getName(){
+            return "Regular";
+        }
+    };
+    private final IntegerProperty numSidesProperty = new SimpleIntegerProperty(){
+        @Override
+        public String getName(){
+            return "Number of Sides";
+        }
+    };
 
     @Override
-    public void populateListViewWithOptions(ListView<Node> listView) {
-        ObservableList<Node> optionList = FXCollections.observableArrayList();
-        
-        ComboBox<String> regularCB = new ComboBox<>(FXCollections.observableArrayList("True","False"));
-        if(regularProperty().get())
-            regularCB.getSelectionModel().select(0);
-        else
-            regularCB.getSelectionModel().select(1);
-        
-        regularCB.setOnAction( (e) -> {
-            regularProperty().set(regularCB.getValue().equals("True"));
-            if(regularProperty().get()){
-                normalizeShape();
-            }
-        });
-        Label regularLabel = new Label("Regular: ", regularCB);
-        regularLabel.setContentDisplay(ContentDisplay.BOTTOM);
-        optionList.add(regularLabel);
-        
-        Spinner<Integer> sidesSpinner = new Spinner<>();
-        sidesSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(2,10,numSidesProperty().get()));
-        sidesSpinner.valueProperty().addListener((o, oV, nV) -> {
-            setShape(nV, sideLength,
-                new Point2D(controlPoints.get(0).getCenterX(),
-                            controlPoints.get(0).getCenterY()),
-                new Point2D(controlPoints.get(1).getCenterX(),
-                            controlPoints.get(1).getCenterY()));
-        });
-        Label sidesLabel = new Label("# Sides:", sidesSpinner);
-        sidesLabel.setContentDisplay(ContentDisplay.BOTTOM);
-        sidesSpinner.maxWidthProperty().bind(listView.widthProperty().subtract(20));
-        optionList.add(sidesLabel);
-        
-        Spinner<Double> sideLengthSpinner = new Spinner<>();
-        sideLengthSpinner.maxWidthProperty().bind(listView.widthProperty().subtract(20));
-        sideLengthSpinner.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0, Double.MAX_VALUE, sideLength));
-        sideLengthSpinner.valueProperty().addListener((o, oV, nV) -> {
-            setShape(numSidesProperty().get(), nV,
-                new Point2D(controlPoints.get(0).getCenterX(),
-                            controlPoints.get(0).getCenterY()));
-        });
-        Label sideLengthLabel = new Label("Side Length", sideLengthSpinner);
-        sideLengthLabel.setContentDisplay(ContentDisplay.BOTTOM);
-        optionList.add(sideLengthLabel);
-        
-        internalShape.styleStringsProperty.forEach((k,v) -> {
-            TextField tf = new TextField(v);
-            tf.maxWidthProperty().bind(listView.widthProperty().subtract(25));
-            tf.textProperty().addListener((o, oV, nV) -> {
-                internalShape.styleStringsProperty.put(k, nV);
-            });
-            Label label = new Label(k,tf);
-            label.setContentDisplay(ContentDisplay.BOTTOM);
-            optionList.add(label);
-        });
-        
-        TextField newStyleField = new TextField("");
-        newStyleField.prefWidthProperty().bind(listView.widthProperty());
-        Label newStyleLabel = new Label("New CSS Rule", newStyleField);
-        newStyleLabel.setContentDisplay(ContentDisplay.BOTTOM);
-        optionList.add(newStyleLabel);
-        
-        Button newStyleButton = new Button("Add new Style");
-        newStyleButton.setOnAction( e -> {
-            internalShape.styleStringsProperty.put(newStyleField.textProperty().get(), "");
-            populateListViewWithOptions(listView);
-        });
-        optionList.add(newStyleButton);
-        
-        listView.getItems().clear();
-        listView.getItems().addAll(optionList);
+    public ObservableList<Property> getModifiablePropertiesList() {
+        ObservableList<Property> propertyList = FXCollections.observableArrayList();
+        propertyList.addAll(
+                polygonNameProperty,
+                regularProperty,
+                numSidesProperty
+        );
+        return propertyList;
     }
     
     private class RoomShape extends Polygon{
         
-        private final BooleanProperty highlighted = new SimpleBooleanProperty(false) {
+        private final BooleanProperty selected = new SimpleBooleanProperty(false) {
             @Override
             public void invalidated() {
-                pseudoClassStateChanged(HIGHLIGHTED_PSEUDO_CLASS, get());
+                pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, get());
             }
 
             @Override
@@ -143,7 +89,7 @@ public final class Room extends Parent implements ModifiableOptions {
 
             @Override
             public String getName() {
-                return "highlighted";
+                return "Selected";
             }
         };
         
@@ -188,10 +134,19 @@ public final class Room extends Parent implements ModifiableOptions {
     }
     
     public Room(int numSides, double sideLength, Point2D startPoint, Point2D firstSideEndPoint){
+        numSidesProperty.set(numSides);
+        this.sideLength = sideLength;
         setShape(numSides, sideLength, startPoint, firstSideEndPoint);
         addListenerForCPList();
-        internalShape.highlighted.bind(highlightedProperty);
+        numSidesProperty().addListener((o, oV, nV) -> {
+            setShape();
+        });
+        internalShape.selected.bind(selectedProperty);
         internalShape.styleStringsProperty.put("-fx-fill", "");
+    }
+    
+    public final void setShape(){
+        setShape(numSidesProperty().get(),sideLength, controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
     }
     
     public final void setShape(Point2D startPoint, Point2D endPoint) throws IllegalArgumentException{
@@ -203,7 +158,7 @@ public final class Room extends Parent implements ModifiableOptions {
     }
     
     public final void setShape(int numSides, double sideLength, Point2D startPoint) throws IllegalArgumentException{
-        this.setShape(numSides, sideLength, startPoint, new Point2D(startPoint.getX()+sideLength, startPoint.getY()));
+        setShape(numSides, sideLength, startPoint, new Point2D(startPoint.getX()+sideLength, startPoint.getY()));
     }
     
     public final void setShape(int numSides, double sideLength, Point2D startPoint, Point2D endPoint) throws IllegalArgumentException{
@@ -214,8 +169,6 @@ public final class Room extends Parent implements ModifiableOptions {
         if(startPoint == null)
             throw new IllegalArgumentException("startPoint cannot be null");
         
-        numSidesProperty.set(numSides);
-        this.sideLength = sideLength;
         getChildren().clear();
         internalShape.getPoints().clear();
         controlPoints.clear();
@@ -236,7 +189,7 @@ public final class Room extends Parent implements ModifiableOptions {
             }
         }
         
-        controlPoints.forEach(cp -> cp.setSelected(highlightedProperty().get()));
+        controlPoints.forEach(cp -> cp.setSelected(selectedProperty().get()));
         
         fixToPoints();
         getChildren().add(internalShape);
@@ -263,19 +216,21 @@ public final class Room extends Parent implements ModifiableOptions {
         return sideLength;
     }
     
-    public boolean isHighlighted(){
-            return this.highlightedProperty.get();
+    @Override
+    public boolean isSelected(){
+            return this.selectedProperty.get();
         }
 
-    public void setHighlighted(boolean highlighted){
-        this.highlightedProperty.set(highlighted);
+    @Override
+    public void setSelected(boolean selected){
+        this.selectedProperty.set(selected);
         controlPoints.stream().forEach((cp) -> {
-            cp.setSelected(highlighted);
+            cp.setSelected(selected);
         });
     }
     
-    public BooleanProperty highlightedProperty(){
-        return highlightedProperty;
+    public BooleanProperty selectedProperty(){
+        return selectedProperty;
     }
     
     public boolean isRegular(){
@@ -323,16 +278,21 @@ public final class Room extends Parent implements ModifiableOptions {
         }
     }
     
+    @Override
     public void translate(double xTrans, double yTrans){
-        int i=0;
-        while(i+1 < internalShape.getPoints().size()){
-            internalShape.getPoints().set(i, internalShape.getPoints().get(i) + xTrans);
-            i++;
-            internalShape.getPoints().set(i, internalShape.getPoints().get(i) + yTrans);
-            ControlPoint cp = controlPoints.get(i/2);
-            cp.setCenterX(cp.getCenterX() + xTrans);
-            cp.setCenterY(cp.getCenterY() + yTrans);
-        }
+        Bounds bounds = getBoundsInParent();
+        
+        if(bounds.getMinX()+xTrans < 0)
+            xTrans = bounds.getMinX() * -1;
+        
+        if(bounds.getMinY()+yTrans < 0)
+            yTrans = bounds.getMinY() * -1;
+        
+        double x = xTrans;
+        double y = yTrans;
+        controlPoints.stream().forEach((cp) -> {
+            cp.translate(x, y);
+        });
     }
     
     private void addListenerForCPList(){

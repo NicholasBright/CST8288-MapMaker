@@ -90,7 +90,7 @@
     -fx-stroke:                 black;
 }
 
-.room:highlighted {
+.room:selected {
     -fx-stroke:                 red;
     -fx-stroke-width:           4px;
     -fx-stroke-dash-array:      10 25;
@@ -120,4 +120,9 @@
 
 #MapArea {
     -fx-background-color: white;
+}
+
+.validated-text-field:invalid {
+    -fx-border-color: red;
+    -fx-border-width: 2px;
 }

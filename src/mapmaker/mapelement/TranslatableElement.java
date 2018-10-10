@@ -3,15 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mapmaker;
-
-import javafx.scene.Node;
-import javafx.scene.control.ListView;
+package mapmaker.mapelement;
 
 /**
  *
  * @author owner
  */
-public interface ModifiableOptions {
-    public void populateListViewWithOptions(ListView<Node> lv);
+public interface TranslatableElement {
+    public void translate(double x, double y);
 }

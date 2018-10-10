@@ -9,9 +9,14 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -23,6 +28,9 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
@@ -38,7 +46,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 import mapmaker.mapelement.Room;
 import mapmaker.tool.CreateRoomTool;
 import mapmaker.tool.DoorTool;
@@ -48,6 +55,7 @@ import mapmaker.tool.PathTool;
 import mapmaker.tool.SelectTool;
 import mapmaker.tool.Tool;
 import mapmaker.tool.ToolState;
+import mapmaker.uielements.ValidatedTextField;
 
 /**
  *
@@ -270,7 +278,7 @@ public class MapMaker extends Application {
         detailsBox.prefHeightProperty().bind(rootPane.heightProperty());
         detailsBox.prefWidthProperty().bind(rootPane.widthProperty().divide(5.0));
         
-        ListView<Node> optionsList = new ListView<>();
+        ListView<Label> optionsList = new ListView<>();
         optionsList.setId("OptionsPane");
         optionsList.prefHeightProperty().bind(detailsBox.heightProperty().multiply(0.5));
         optionsList.maxWidthProperty().bind(detailsBox.widthProperty());
@@ -285,14 +293,15 @@ public class MapMaker extends Application {
         roomListView.addEventHandler(MouseEvent.MOUSE_CLICKED, (e) -> {
             if(!e.isShiftDown()){
                 mapArea.getRooms().stream().forEach((room) -> {
-                room.setHighlighted(false);
+                room.setSelected(false);
                 });
             }
             Label label = roomListView.getSelectionModel().getSelectedItem();
             if(label != null){
                 Room room = ((Room) label.getUserData());
-                room.setHighlighted(true);
-                room.populateListViewWithOptions(optionsList);
+                room.setSelected(true);
+                optionsList.getItems().clear();
+                optionsList.setItems(buildOptionList(room.getModifiablePropertiesList()));
             }
         });
         
@@ -306,7 +315,7 @@ public class MapMaker extends Application {
                     newRoomLabel.setUserData(r);
                     newRoomLabel.addEventHandler(MouseEvent.MOUSE_CLICKED, (e) -> {
                     });
-                    r.highlightedProperty().addListener((o, oV, nV) -> {
+                    r.selectedProperty().addListener((o, oV, nV) -> {
                         newRoomLabel.setStyle((nV ? "-fx-background-color: gold" : null));
                     });
                     roomList.add(newRoomLabel);
@@ -388,5 +397,50 @@ public class MapMaker extends Application {
         b.setId(id);
         b.setOnAction(handler);
         return b;
+    }
+    
+    public ObservableList<Label> buildOptionList(ObservableList<Property> propList){
+        ObservableList<Label> optList = FXCollections.observableArrayList();
+        propList.stream().forEach((p)->{
+            Control ctrl;
+            if(p instanceof BooleanProperty){
+                ComboBox<Boolean> boolCB = new ComboBox<>();
+                boolCB.getItems().addAll(true, false);
+                boolCB.valueProperty().set(((BooleanProperty) p).getValue());
+                boolCB.valueProperty().addListener((o, oV, nV) -> {
+                    ((BooleanProperty) p).set(nV);
+                });
+                ctrl = boolCB;
+            }
+            else {
+                ValidatedTextField tf = new ValidatedTextField(p.getValue().toString());
+                if(p instanceof IntegerProperty){
+                    tf.setValidateFunction((s) -> {
+                        return !(Pattern.compile("\\d+").matcher(s).matches() && Integer.parseInt(s) > 1);
+                    });
+                    tf.setOnKeyReleased((e) -> {
+                        if(!tf.isInvalid()){
+                            ((IntegerProperty) p).set(Integer.parseInt(tf.getText()));
+                        }
+                    });
+                }
+                else if(p instanceof StringProperty){
+                    tf.setValidateFunction((s) -> {
+                        return false;
+                    });
+                    tf.setOnKeyReleased((e) -> {
+                        if(!tf.isInvalid()){
+                            ((StringProperty) p).set(tf.getText());
+                        }
+                    });
+                }
+                ctrl = tf;
+            }
+
+            Label optionLabel = new Label(p.getName(), ctrl);
+            optionLabel.setContentDisplay(ContentDisplay.BOTTOM);
+            optList.add(optionLabel);
+        });
+        return optList;
     }
 }

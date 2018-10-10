@@ -1,12 +1,17 @@
 package mapmaker.tool;
 
-import javafx.geometry.Bounds;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Stream;
 import javafx.geometry.Point2D;
-import javafx.scene.Group;
+import javafx.scene.Parent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import mapmaker.mapelement.ControlPoint;
+import mapmaker.mapelement.TranslatableElement;
 import mapmaker.mapelement.Room;
+import mapmaker.mapelement.SelectableElement;
 
 /**
  *
@@ -14,30 +19,69 @@ import mapmaker.mapelement.Room;
  */
 public class MoveTool extends Tool {
     Point2D lastPoint = null;
-    Group cpGroup = null;
+    final ArrayList<TranslatableElement> toMoveList = new ArrayList<>();
     
     public MoveTool(Pane target){
         super("Move Tool", "Click and drag to move selected control points around the pane", target);
     }
     
-    @Override
-    public void mousePressed(MouseEvent e) {
-        lastPoint = new Point2D(e.getX(), e.getY());
-        cpGroup = new Group();
-        target.getChildren()
+    private List<SelectableElement> getSelectedChildren(Parent parent){
+        ArrayList<SelectableElement> finalList = new ArrayList<>();
+        parent.getChildrenUnmodifiable()
             .stream()
-            .forEach((n) -> {
-                if(n instanceof Room){
-                    Room r = (Room)n;
-                    r.getControlPoints()
+            .forEach((child)->{
+                if(child instanceof Parent)
+                    finalList.addAll(getSelectedChildren((Parent)child));
+                if(child instanceof SelectableElement)
+                    if(((SelectableElement)child).isSelected())
+                        finalList.add((SelectableElement)child);
+            });
+        return finalList;
+    }
+    
+    private void cleanUpControlPointOfRegularRooms(){
+        ArrayList<Room> toAdd = new ArrayList<>();
+        ArrayList<ControlPoint> toRemove = new ArrayList<>();
+        toMoveList.stream()
+            .filter((te)->(te instanceof ControlPoint))
+            .forEach((te)->{
+                ControlPoint cp = ((ControlPoint)te);
+                Room owner = cp.getOwner();
+                if(owner.isRegular()){
+                    if(!toAdd.contains(owner))
+                        toAdd.add(owner);
+                    owner.getControlPoints()
                         .stream()
-                        .filter( (cp) -> (cp.isSelected()))
-                        .forEach( (cp) -> {
-                            cpGroup.getChildren().add(cp);
+                        .filter((c)->(!toRemove.contains(c)))
+                        .forEach((c)->{
+                            toRemove.add(c);
                         });
                 }
             });
-        target.getChildren().add(cpGroup);
+        toMoveList.addAll(toAdd);
+        toMoveList.removeAll(toRemove);
+    }
+    
+    @Override
+    public void mousePressed(MouseEvent e) {
+        lastPoint = new Point2D(e.getX(), e.getY());
+        
+        getSelectedChildren(target).stream()
+            .filter((child)->(child instanceof TranslatableElement))
+            .forEach((child)->{
+                toMoveList.add((TranslatableElement)child);
+            });
+        
+        if(!(toMoveList.size() > 0)){
+            target.getChildren().stream()
+                    .filter((child)->(child instanceof TranslatableElement))
+                    .filter((child)->(child.contains(e.getX(), e.getY())))
+                    .findFirst().ifPresent((c)->{
+                        toMoveList.add((TranslatableElement)c);
+                    });
+        }
+        
+        cleanUpControlPointOfRegularRooms();
     }
 
     @Override
@@ -46,49 +90,17 @@ public class MoveTool extends Tool {
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        target.getChildren().remove(cpGroup);
-        Object nodes[] = cpGroup.getChildren().toArray();
-        for(Object n : nodes){
-            ControlPoint cp = (ControlPoint) n;
-            cp.returnToOwner();
-        }
-        cpGroup.getChildren().clear();
+        toMoveList.clear();
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        Bounds pBounds = target.getBoundsInLocal();
-        Bounds gBounds = cpGroup.getBoundsInParent();
-        final double xTrans;
-        final double yTrans;
-        
-        if(pBounds.getMaxX() < gBounds.getMaxX() + e.getX() - lastPoint.getX()){
-            xTrans = pBounds.getMaxX() - gBounds.getMaxX();
-        } else if (pBounds.getMinX() > gBounds.getMinX() + e.getX() - lastPoint.getX()){
-            xTrans = pBounds.getMinX() - gBounds.getMinX();
-        }
-        else {
-            xTrans = e.getX() - lastPoint.getX();
-        }
-        
-        if(pBounds.getMaxY() < gBounds.getMaxY() + e.getY() - lastPoint.getY()){
-            yTrans = pBounds.getMaxY() - gBounds.getMaxY();
-        } else if (pBounds.getMinY() > gBounds.getMinY() + e.getY() - lastPoint.getY()){
-            yTrans = pBounds.getMinY() - gBounds.getMinY();
-        }
-        else {
-            yTrans = e.getY() - lastPoint.getY();
-        }
-        
-        cpGroup.getChildren().forEach( (o) -> {
-            if(o instanceof ControlPoint){
-                ControlPoint cp = (ControlPoint) o;
-                cp.setX(cp.getCenterX() + xTrans);
-                cp.setY(cp.getCenterY() + yTrans);
-            }
+        toMoveList.stream().forEach((te)->{
+            if(te instanceof ControlPoint)
+                if(((ControlPoint) te).getOwner().isRegular())
+            te.translate(e.getX()-lastPoint.getX(),e.getY()-lastPoint.getY());
         });
-        
-        lastPoint = new Point2D(lastPoint.getX() + xTrans, e.getY());
+        lastPoint = new Point2D(e.getX(), e.getY());
     }
     
     @Override

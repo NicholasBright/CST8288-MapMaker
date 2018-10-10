@@ -47,7 +47,7 @@ public class SelectTool extends Tool {
                         Room r = (Room)n;
                         boolean clicked = (r.contains(startPoint) && r.contains(new Point2D(e.getX(), e.getY())));
                         if(!(e.isShiftDown() && !clicked))
-                            r.setHighlighted(clicked);
+                            r.setSelected(clicked);
                     }
                 });
             target.getChildren().remove(selectedArea);
@@ -61,7 +61,7 @@ public class SelectTool extends Tool {
                 if(n instanceof Room){
                     Room r = (Room)n;
                     if(!e.isShiftDown())
-                        r.setHighlighted(false);
+                        r.setSelected(false);
                     r.getControlPoints()
                         .stream()
                         .forEach((cp) -> {
@@ -125,7 +125,7 @@ public class SelectTool extends Tool {
             .forEach( (n) -> {
                 if(n instanceof Room){
                     Room r = (Room)n;
-                    r.setHighlighted(false);
+                    r.setSelected(false);
                 }
             });
     }
