@@ -16,7 +16,7 @@ import mapmaker.tool.ToolState;
  */
 public class MapArea extends Pane {
     
-    private static ObservableList<Room> rooms = FXCollections.observableArrayList();
+    private final ObservableList<Room> rooms = FXCollections.observableArrayList();
     
     public MapArea(){
         super();
@@ -26,26 +26,45 @@ public class MapArea extends Pane {
             ToolState.getToolState().getActiveTool().handleMouseEvent(e);
         });
         
-        super.getChildren().addListener((ListChangeListener.Change<? extends Node> c) -> {
+        rooms.addListener((ListChangeListener.Change<? extends Node> c) -> {
             while(c.next()){
                 if(c.wasAdded()){
                     c.getAddedSubList()
                         .stream()
                         .forEach((Node n) -> {
-                            if(n instanceof Room){
-                                Room r = (Room)n;
-                                add(r);
-                            }
+                            if(!super.getChildren().contains(n))
+                                super.getChildren().add(n);
                         });
                 }
                 else if(c.wasRemoved()){
                     c.getRemoved()
                         .stream()
                         .forEach((n) -> {
-                            if(n instanceof Room){
-                                Room r = (Room)n;
-                                remove(r);
-                            }
+                            if(super.getChildren().contains(n))
+                                super.getChildren().remove(n);
+                        });
+                }
+            }
+        });
+        
+        super.getChildren().addListener((ListChangeListener.Change<? extends Node> c) -> {
+            while(c.next()){
+                if(c.wasAdded()){
+                    c.getAddedSubList()
+                        .stream()
+                        .forEach((Node n) -> {
+                            if(n instanceof Room)
+                                if(!rooms.contains((Room)n))
+                                    add((Room)n);
+                        });
+                }
+                else if(c.wasRemoved()){
+                    c.getRemoved()
+                        .stream()
+                        .forEach((n) -> {
+                            if(n instanceof Room)
+                                if(rooms.contains((Room)n))
+                                    remove((Room)n);
                         });
                 }
             }

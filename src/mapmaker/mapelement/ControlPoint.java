@@ -9,13 +9,14 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.BooleanPropertyBase;
 import javafx.css.PseudoClass;
 import javafx.geometry.Point2D;
+import javafx.scene.Cursor;
 import javafx.scene.shape.Circle;
 
 /**
  *
  * @author owner
  */
-public class ControlPoint extends Circle implements TranslatableElement, SelectableElement{
+public class ControlPoint extends Circle implements TranslatableElement, SelectableElement, RemovableElement {
     Room owner;
     
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
@@ -91,5 +92,10 @@ public class ControlPoint extends Circle implements TranslatableElement, Selecta
     
     public Room getOwner(){
         return owner;
+    }
+    
+    @Override
+    public void remove(){
+        getOwner().removeControlPoint(this);
     }
 }

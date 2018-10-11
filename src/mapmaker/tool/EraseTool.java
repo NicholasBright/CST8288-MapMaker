@@ -5,11 +5,9 @@
  */
 package mapmaker.tool;
 
-import java.util.Iterator;
-import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-import mapmaker.mapelement.Room;
+import mapmaker.mapelement.RemovableElement;
 
 /**
  *
@@ -27,19 +25,9 @@ public class EraseTool extends Tool {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        Room toRemove = null;
-        Iterator<Node> i = target.getChildren().iterator();
-        while(i.hasNext()){
-            Node n = i.next();
-            if(n instanceof Room){
-                Room r = (Room) n;
-                if(r.contains(e.getX(), e.getY())){
-                    toRemove = r;
-                }
-            }
+        if(e.getTarget() instanceof RemovableElement){
+            ((RemovableElement)e.getTarget()).remove();
         }
-        if(toRemove != null)
-            target.getChildren().remove(toRemove);
     }
 
     @Override
@@ -48,6 +36,10 @@ public class EraseTool extends Tool {
 
     @Override
     public void mouseDragged(MouseEvent e) {
+    }
+    
+    @Override
+    public void mouseMoved(MouseEvent e) {
     }
     
     @Override

@@ -10,13 +10,12 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
-import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;
@@ -24,12 +23,15 @@ import javafx.geometry.Point2D;
 import javafx.scene.Parent;
 import javafx.scene.shape.Polygon;
 import javafx.scene.transform.Rotate;
+import mapmaker.MapArea;
 
 /**
  *
  * @author nick
  */
-public final class Room extends Parent implements ModifiableProperties, TranslatableElement, SelectableElement {
+public final class Room
+        extends Parent
+        implements ModifiableProperties, TranslatableElement {
     private boolean triggerListenerFlag = true;
     
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
@@ -43,40 +45,54 @@ public final class Room extends Parent implements ModifiableProperties, Translat
             return "Side length";
         }
     };
-    private final SimpleStringProperty polygonNameProperty = new SimpleStringProperty(null){
+    private final SimpleStringProperty nameProperty = new SimpleStringProperty(null){
         @Override
         public String getName(){
             return "Polygon Name";
         }
         
+        boolean customNameFlag = false;
+        
         @Override
-        public String getValue(){
-            if(get() == null){
-                switch(controlPoints.size()){
-                    case 2:
-                        return "Line";
-                    case 3: 
-                        return "Triangle";
-                    case 4:
-                        return "Rectangle";
-                    case 5:
-                        return "Pentagon";
-                    case 6:
-                        return "Hexagon";
-                    default:
-                        return "Polygon";
-                }
+        public void set(String string){
+            if(string != null){
+                super.set(string);
+                customNameFlag = true;
             }
-            return get();
+            else if(!customNameFlag) {
+                String newVal;
+                switch(controlPoints.size()){
+                    case 1:
+                        newVal = "Point";
+                        break;
+                    case 2:
+                        newVal = "Line";
+                        break;
+                    case 3: 
+                        newVal = "Triangle";
+                        break;
+                    case 4:
+                        newVal = "Rectangle";
+                        break;
+                    case 5:
+                        newVal = "Pentagon";
+                        break;
+                    case 6:
+                        newVal = "Hexagon";
+                        break;
+                    default:
+                        newVal = "Polygon";
+                }
+                super.set(newVal);
+            }
         }
     };
-    
-    private final BooleanProperty selectedProperty = new SimpleBooleanProperty(false){
+    /*private final BooleanProperty selectedProperty = new SimpleBooleanProperty(false){
         @Override
         public String getName(){
             return "Selected";
         }
-    };
+    };*/
     private final BooleanProperty regularProperty = new SimpleBooleanProperty(true){
         @Override
         public String getName(){
@@ -93,8 +109,7 @@ public final class Room extends Parent implements ModifiableProperties, Translat
     @Override
     public ObservableList<Property> getModifiablePropertiesList() {
         ObservableList<Property> propertyList = FXCollections.observableArrayList();
-        propertyList.addAll(
-                polygonNameProperty,
+        propertyList.addAll(nameProperty,
                 regularProperty,
                 numSidesProperty,
                 sideLengthProperty
@@ -102,28 +117,46 @@ public final class Room extends Parent implements ModifiableProperties, Translat
         return propertyList;
     }
     
-    private class RoomShape extends Polygon{
+    private class RoomShape extends Polygon implements RemovableElement, SelectableElement{
         
-        private final BooleanProperty selected = new SimpleBooleanProperty(false) {
+        private final BooleanProperty selectedProperty = new SimpleBooleanProperty(false) {
             @Override
             public void invalidated() {
                 pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, get());
             }
 
             @Override
-            public Object getBean() {
-                return this;
-            }
-
-            @Override
             public String getName() {
                 return "Selected";
+            }
+            
+            @Override
+            public void set(boolean b){
+                super.set(b);
+                controlPoints.stream().forEach((cp) -> {
+                    cp.setSelected(b);
+                });
             }
         };
         
         public RoomShape(){
             super();
             getStyleClass().add("room");
+        }
+    
+        @Override
+        public void remove(){
+            ((MapArea)(Room.this.getParent())).getRooms().remove(Room.this);
+        }
+    
+        @Override
+        public boolean isSelected(){
+                return this.selectedProperty.get();
+            }
+
+        @Override
+        public void setSelected(boolean selected){
+            this.selectedProperty.set(selected);
         }
     }
     
@@ -147,22 +180,31 @@ public final class Room extends Parent implements ModifiableProperties, Translat
         numSidesProperty().set(numSides);
         setShape(numSides, startPoint, firstSideEndPoint);
         numSidesProperty().addListener((o, oV, nV) -> {
-            setShape(numSidesProperty().get(), controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
+            if((Integer)nV>1)
+                if((Integer)oV == 1)
+                    setShape((Integer)nV, getSideLength(), controlPoints.get(0).getCenter());
+                else
+                    setShape((Integer)nV, controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
+            else
+                fixToPoints();
         });
         regularProperty().addListener((o, oV, nV)->{
-            setShape(numSidesProperty().get(), controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
+            if(controlPoints.size()>1)
+                setShape(numSidesProperty().get(), controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
         });
         sideLengthProperty().addListener((o, oV, nV)->{
             if(triggerListenerFlag){
-                Point2D vectorToEnd = new Point2D(
-                        controlPoints.get(1).getCenterX() - controlPoints.get(0).getCenterX(),
-                        controlPoints.get(1).getCenterY() - controlPoints.get(0).getCenterY());
-                vectorToEnd = vectorToEnd.normalize().multiply((Double)nV);
-                Point2D newEnd = new Point2D(controlPoints.get(0).getCenterX()+vectorToEnd.getX(),controlPoints.get(0).getCenterY()+vectorToEnd.getY());
-                setShape(numSidesProperty().get(), controlPoints.get(0).getCenter(), newEnd);
+                if(controlPoints.size()>1){
+                    Point2D vectorToEnd = new Point2D(
+                            controlPoints.get(1).getCenterX() - controlPoints.get(0).getCenterX(),
+                            controlPoints.get(1).getCenterY() - controlPoints.get(0).getCenterY());
+                    vectorToEnd = vectorToEnd.normalize().multiply((Double)nV);
+                    Point2D newEnd = new Point2D(controlPoints.get(0).getCenterX()+vectorToEnd.getX(),controlPoints.get(0).getCenterY()+vectorToEnd.getY());
+                    setShape(numSidesProperty().get(), controlPoints.get(0).getCenter(), newEnd);
+                }
             }
         });
-        internalShape.selected.bind(selectedProperty);
+        //internalShape.selectedProperty.bind(selectedProperty);
     }
     
     public final void setShape(Point2D startPoint, Point2D endPoint) throws IllegalArgumentException{
@@ -211,6 +253,7 @@ public final class Room extends Parent implements ModifiableProperties, Translat
         fixToPoints();
         getChildren().add(internalShape);
         getChildren().addAll(controlPoints);
+        nameProperty().set(null);
     }
     
     public void normalizeShape(){
@@ -241,21 +284,16 @@ public final class Room extends Parent implements ModifiableProperties, Translat
         return sideLengthProperty;
     }
     
-    @Override
     public boolean isSelected(){
-            return this.selectedProperty.get();
-        }
-
-    @Override
+        return selectedProperty().get();
+    }
+    
     public void setSelected(boolean selected){
-        this.selectedProperty.set(selected);
-        controlPoints.stream().forEach((cp) -> {
-            cp.setSelected(selected);
-        });
+        selectedProperty().set(selected);
     }
     
     public BooleanProperty selectedProperty(){
-        return selectedProperty;
+        return internalShape.selectedProperty;
     }
     
     public boolean isRegular(){
@@ -278,8 +316,16 @@ public final class Room extends Parent implements ModifiableProperties, Translat
         return numSidesProperty;
     }
     
-    public ReadOnlyStringProperty polyNameProperty(){
-        return this.polygonNameProperty;
+    public String getName(){
+        return nameProperty().get();
+    }
+    
+    public void setName(String name){
+        nameProperty().set(name);
+    }
+    
+    public StringProperty nameProperty(){
+        return this.nameProperty;
     }
     
     public void fixToPoints() {
@@ -299,7 +345,26 @@ public final class Room extends Parent implements ModifiableProperties, Translat
             internalShape.getPoints().addAll(cp.getCenterX(), cp.getCenterY());
             this.getChildren().remove(internalShape);
             this.getChildren().add(0,internalShape);
-            numSidesProperty.set(controlPoints.size()-1);
+            numSidesProperty().set(controlPoints.size()-1);
+        }
+    }
+    
+    public void removeControlPoint(ControlPoint cp){
+        if(getChildren().contains(cp)){
+            getChildren().remove(cp);
+        }
+        if(controlPoints.contains(cp)){
+            if(controlPoints.size() == 1)
+                ((MapArea)getParent()).getRooms().remove(this);
+            else {
+                controlPoints.remove(cp);
+                numSidesProperty().set(controlPoints.size());
+                /*if(isRegular() && controlPoints.size() > 2)
+                    numSidesProperty().set(controlPoints.size());
+                    //setShape(getNumSides(),controlPoints.get(0).getCenter(),controlPoints.get(1).getCenter());
+                else
+                    fixToPoints();*/
+            }
         }
     }
     
@@ -317,33 +382,6 @@ public final class Room extends Parent implements ModifiableProperties, Translat
         double y = yTrans;
         controlPoints.stream().forEach((cp) -> {
             cp.translate(x, y);
-        });
-    }
-    
-    private void addListenerForCPList(){
-        controlPoints.addListener((ListChangeListener.Change<? extends ControlPoint> c) -> {
-            String polyName;
-            switch(controlPoints.size()){
-                case 2:
-                    polyName = "Line";
-                    break;
-                case 3: 
-                    polyName = "Triangle";
-                    break;
-                case 4:
-                    polyName = "Rectangle";
-                    break;
-                case 5:
-                    polyName = "Pentagon";
-                    break;
-                case 6:
-                    polyName = "Hexagon";
-                    break;
-                default:
-                    polyName = "Polygon";
-                    break;
-            }
-            polygonNameProperty.set(polyName);
         });
     }
 }

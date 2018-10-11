@@ -294,15 +294,22 @@ public class MapMaker extends Application {
         roomListView.addEventHandler(MouseEvent.MOUSE_CLICKED, (e) -> {
             if(!e.isShiftDown()){
                 mapArea.getRooms().stream().forEach((room) -> {
-                room.setSelected(false);
+                    room.setSelected(false);
                 });
             }
+            
             Label label = roomListView.getSelectionModel().getSelectedItem();
             if(label != null){
                 Room room = ((Room) label.getUserData());
                 room.setSelected(true);
-                optionsList.getItems().clear();
-                optionsList.setItems(buildOptionList(room.getModifiablePropertiesList()));
+            }
+        });
+        
+        roomListView.getSelectionModel().selectedItemProperty().addListener((o, oV, nV)->{
+            optionsList.getItems().clear();
+            if(nV != null){
+                nV.setStyle("-fx-underline: true; ");
+                optionsList.setItems(buildOptionList(((Room)nV.getUserData()).getModifiablePropertiesList()));
             }
         });
         
@@ -312,12 +319,14 @@ public class MapMaker extends Application {
                  .stream()
                  .forEach(r -> {
                     Label newRoomLabel = new Label();
-                    newRoomLabel.textProperty().bind(r.polyNameProperty());
+                    newRoomLabel.textProperty().bind(r.nameProperty());
                     newRoomLabel.setUserData(r);
-                    newRoomLabel.addEventHandler(MouseEvent.MOUSE_CLICKED, (e) -> {
-                    });
+                    /*newRoomLabel.addEventHandler(MouseEvent.MOUSE_CLICKED, (e) -> {
+                        r.setSelected(true);
+                    });*/
                     r.selectedProperty().addListener((o, oV, nV) -> {
-                        newRoomLabel.setStyle((nV ? "-fx-background-color: red" : null));
+                        if(nV)
+                            roomListView.getSelectionModel().select(newRoomLabel);
                     });
                     roomList.add(newRoomLabel);
                 });

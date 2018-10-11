@@ -50,7 +50,6 @@ public class MoveTool extends Tool {
     
     @Override
     public void mousePressed(MouseEvent e) {
-        target.getScene().setCursor(Cursor.MOVE);
         lastPoint = new Point2D(e.getX(), e.getY());
                 
         getSelectedChildren(target).stream()
@@ -79,6 +78,8 @@ public class MoveTool extends Tool {
                     toMoveSet.add((TranslatableElement)n);
             }
         }
+        if(toMoveSet.size() > 0)
+            target.getScene().setCursor(Cursor.MOVE);
     }
 
     @Override
@@ -97,6 +98,11 @@ public class MoveTool extends Tool {
             te.translate(e.getX()-lastPoint.getX(),e.getY()-lastPoint.getY());
         });
         lastPoint = new Point2D(e.getX(), e.getY());
+    }
+    
+    @Override
+    public void mouseMoved(MouseEvent e){
+        
     }
     
     @Override

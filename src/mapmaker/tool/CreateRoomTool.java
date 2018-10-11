@@ -63,6 +63,11 @@ public final class CreateRoomTool extends Tool {
     }
     
     @Override
+    public void mouseMoved(MouseEvent e){
+        
+    }
+    
+    @Override
     public void reset() {
     }
 }

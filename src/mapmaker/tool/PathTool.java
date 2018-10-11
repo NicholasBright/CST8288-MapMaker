@@ -35,6 +35,10 @@ public class PathTool extends Tool {
     }
     
     @Override
+    public void mouseMoved(MouseEvent e){
+    }
+    
+    @Override
     public void reset() {
     }
 }

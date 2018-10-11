@@ -5,11 +5,16 @@
  */
 package mapmaker.tool;
 
+import java.util.function.Consumer;
+import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
+import javafx.scene.Cursor;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
-import mapmaker.mapelement.Room;
+import mapmaker.mapelement.SelectableElement;
 
 /**
  *
@@ -35,21 +40,26 @@ public class SelectTool extends Tool {
         startPoint = new Point2D(e.getX(), e.getY());
         target.getChildren().add(selectedArea);
         draggedFlag = false;
+        if(!e.isShiftDown())
+            unselectAll(target);
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
         if(!draggedFlag){
-            target.getChildren()
+            /*target.getChildren()
                 .stream()
                 .forEach((n) -> {
-                    if(n instanceof Room){
+                    if(n instanceof ){
                         Room r = (Room)n;
                         boolean clicked = (r.contains(startPoint) && r.contains(new Point2D(e.getX(), e.getY())));
                         if(!(e.isShiftDown() && !clicked))
                             r.setSelected(clicked);
                     }
                 });
+            target.getChildren().remove(selectedArea);*/
+            if(e.getTarget() instanceof SelectableElement)
+                ((SelectableElement)e.getTarget()).setSelected(true);
             target.getChildren().remove(selectedArea);
         }
     }
@@ -57,11 +67,13 @@ public class SelectTool extends Tool {
     @Override
     public void mouseReleased(MouseEvent e) {
         if(draggedFlag){
+            selectChildren(target);
+            /*
             target.getChildren().stream().forEach((n) -> {
-                if(n instanceof Room){
+                if(n instanceof SelectableElement && selectedArea.getBoundsInParent().contains(n.getBoundsInParent()))
+                    ((SelectableElement)n).setSelected(true);
+                /*if(n instanceof Room){
                     Room r = (Room)n;
-                    if(!e.isShiftDown())
-                        r.setSelected(false);
                     r.getControlPoints()
                         .stream()
                         .forEach((cp) -> {
@@ -70,7 +82,7 @@ public class SelectTool extends Tool {
                                 cp.setSelected(clicked);
                     });
                 }
-            });
+            });*/
             target.getChildren().remove(selectedArea);
         }
     }
@@ -107,8 +119,15 @@ public class SelectTool extends Tool {
             selectedArea.setY(eY);
             selectedArea.setHeight(startPoint.getY()-eY);
         }
-        
-        draggedFlag = (selectedArea.getWidth() > 10 || selectedArea.getHeight() > 10);
+        draggedFlag = (selectedArea.getWidth() > 5 || selectedArea.getHeight() > 5);
+    }
+    
+    @Override
+    public void mouseMoved(MouseEvent e){
+        if(e.getTarget() instanceof SelectableElement)
+            target.getScene().setCursor(Cursor.HAND);
+        else
+            target.getScene().setCursor(Cursor.DEFAULT);
     }
     
     @Override
@@ -119,14 +138,29 @@ public class SelectTool extends Tool {
         }
     }
     
-    public void unselectPoints(){
-        target.getChildren()
+    private void unselectAll(Parent p){
+        p.getChildrenUnmodifiable()
             .stream()
             .forEach( (n) -> {
-                if(n instanceof Room){
-                    Room r = (Room)n;
-                    r.setSelected(false);
-                }
+                if(n instanceof SelectableElement)
+                    ((SelectableElement)n).setSelected(false);
+                if(n instanceof Parent)
+                    unselectAll((Parent)n);
+            });
+    }
+    
+    private void selectChildren(Parent p){
+        if(p instanceof SelectableElement && selectedArea.getBoundsInParent().contains(p.getBoundsInParent()))
+            ((SelectableElement)p).setSelected(true);
+        p.getChildrenUnmodifiable()
+            .stream()
+            .forEach((c) -> {
+                if(c instanceof SelectableElement && 
+                        selectedArea.getBoundsInParent().contains(c.getBoundsInParent()))
+                    ((SelectableElement)c).setSelected(true);
+                if(c instanceof Parent &&
+                        selectedArea.getBoundsInParent().intersects(c.getBoundsInParent()))
+                    selectChildren((Parent)c);
             });
     }
 }
