@@ -297,9 +297,6 @@ public class MapMaker extends Application {
                 room.setSelected(false);
                 });
             }
-        });
-        
-        roomListView.getSelectionModel().selectedItemProperty().addListener((o, oV, nV)->{
             Label label = roomListView.getSelectionModel().getSelectedItem();
             if(label != null){
                 Room room = ((Room) label.getUserData());
@@ -320,10 +317,7 @@ public class MapMaker extends Application {
                     newRoomLabel.addEventHandler(MouseEvent.MOUSE_CLICKED, (e) -> {
                     });
                     r.selectedProperty().addListener((o, oV, nV) -> {
-                        newRoomLabel.setStyle((nV ? "-fx-background-color: gold" : null));
-                    });
-                    r.setOnMouseClicked((e) -> {
-                        roomListView.getSelectionModel().select(newRoomLabel);
+                        newRoomLabel.setStyle((nV ? "-fx-background-color: red" : null));
                     });
                     roomList.add(newRoomLabel);
                 });
@@ -433,7 +427,7 @@ public class MapMaker extends Application {
                 }
                 else if(p instanceof DoubleProperty){
                     tf.setValidateFunction((s) -> {
-                        return !(Pattern.compile("\\d+\\.?\\d+").matcher(s).matches() && Double.parseDouble(s) > 1);
+                        return !(Pattern.compile("\\d+\\.\\d+").matcher(s).matches() && Double.parseDouble(s) > 0);
                     });
                     tf.setOnKeyReleased((e) -> {
                         if(!tf.isInvalid()){

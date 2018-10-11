@@ -5,7 +5,6 @@
  */
 package mapmaker.mapelement;
 
-import java.util.HashMap;
 import java.util.List;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -18,9 +17,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
 import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
@@ -33,21 +30,44 @@ import javafx.scene.transform.Rotate;
  * @author nick
  */
 public final class Room extends Parent implements ModifiableProperties, TranslatableElement, SelectableElement {
+    private boolean triggerListenerFlag = true;
+    
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     
     private ObservableList<ControlPoint> controlPoints = FXCollections.observableArrayList();
     private RoomShape internalShape = new RoomShape();
     
-    private final SimpleDoubleProperty sideLengthProperty = new SimpleDoubleProperty(){
+    private final SimpleDoubleProperty sideLengthProperty = new SimpleDoubleProperty(-1){
         @Override
         public String getName(){
             return "Side length";
         }
     };
-    private final SimpleStringProperty polygonNameProperty = new SimpleStringProperty(){
+    private final SimpleStringProperty polygonNameProperty = new SimpleStringProperty(null){
         @Override
         public String getName(){
             return "Polygon Name";
+        }
+        
+        @Override
+        public String getValue(){
+            if(get() == null){
+                switch(controlPoints.size()){
+                    case 2:
+                        return "Line";
+                    case 3: 
+                        return "Triangle";
+                    case 4:
+                        return "Rectangle";
+                    case 5:
+                        return "Pentagon";
+                    case 6:
+                        return "Hexagon";
+                    default:
+                        return "Polygon";
+                }
+            }
+            return get();
         }
     };
     
@@ -101,23 +121,9 @@ public final class Room extends Parent implements ModifiableProperties, Translat
             }
         };
         
-        private final ObservableMap<String,String> styleStringsProperty = FXCollections.observableMap((new HashMap<>()));
-        
         public RoomShape(){
             super();
             getStyleClass().add("room");
-            styleStringsProperty.addListener((MapChangeListener.Change<? extends String,? extends String> c)->{
-                StringBuilder newStyleStringBuilder = new StringBuilder();
-                c.getMap().forEach((k,v) -> {
-                    if(!(v == null || v.equals(""))){
-                        newStyleStringBuilder.append(k);
-                        newStyleStringBuilder.append(": ");
-                        newStyleStringBuilder.append(v);
-                        newStyleStringBuilder.append(";");
-                    }
-                });
-                styleProperty().set(newStyleStringBuilder.toString());
-            });
         }
     }
     
@@ -130,35 +136,37 @@ public final class Room extends Parent implements ModifiableProperties, Translat
     }
     
     public Room(int numSides, double sideLength, Double startX, Double startY){
-        this(numSides, sideLength, new Point2D(startX, startY));
+        this(numSides, new Point2D(startX, startY), null);
     }
     
     public Room(int numSides, double sideLength, Point2D startPoint){
-        this(numSides, sideLength, startPoint, null);
+        this(numSides, startPoint, new Point2D(startPoint.getX()+sideLength,startPoint.getY()));
     }
     
     public Room(int numSides, Point2D startPoint, Point2D firstSideEndPoint){
-        this(numSides, firstSideEndPoint.distance(startPoint), startPoint, firstSideEndPoint);
-    }
-    
-    public Room(int numSides, double sideLength, Point2D startPoint, Point2D firstSideEndPoint){
         numSidesProperty().set(numSides);
-        sideLengthProperty().set(sideLength);
-        setShape(numSides, sideLength, startPoint, firstSideEndPoint);
-        addListenerForCPList();
+        setShape(numSides, startPoint, firstSideEndPoint);
         numSidesProperty().addListener((o, oV, nV) -> {
-            setShape();
+            setShape(numSidesProperty().get(), controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
+        });
+        regularProperty().addListener((o, oV, nV)->{
+            setShape(numSidesProperty().get(), controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
+        });
+        sideLengthProperty().addListener((o, oV, nV)->{
+            if(triggerListenerFlag){
+                Point2D vectorToEnd = new Point2D(
+                        controlPoints.get(1).getCenterX() - controlPoints.get(0).getCenterX(),
+                        controlPoints.get(1).getCenterY() - controlPoints.get(0).getCenterY());
+                vectorToEnd = vectorToEnd.normalize().multiply((Double)nV);
+                Point2D newEnd = new Point2D(controlPoints.get(0).getCenterX()+vectorToEnd.getX(),controlPoints.get(0).getCenterY()+vectorToEnd.getY());
+                setShape(numSidesProperty().get(), controlPoints.get(0).getCenter(), newEnd);
+            }
         });
         internalShape.selected.bind(selectedProperty);
-        internalShape.styleStringsProperty.put("-fx-fill", "");
-    }
-    
-    public final void setShape(){
-        setShape(numSidesProperty().get(),sideLengthProperty().get(), controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
     }
     
     public final void setShape(Point2D startPoint, Point2D endPoint) throws IllegalArgumentException{
-        setShape(getNumSides(), endPoint.distance(startPoint), startPoint, endPoint);
+        setShape(getNumSides(), startPoint, endPoint);
     }
     
     public final void setShape(Point2D startPoint) throws IllegalArgumentException{
@@ -166,23 +174,24 @@ public final class Room extends Parent implements ModifiableProperties, Translat
     }
     
     public final void setShape(int numSides, double sideLength, Point2D startPoint) throws IllegalArgumentException{
-        setShape(numSides, sideLength, startPoint, new Point2D(startPoint.getX()+sideLength, startPoint.getY()));
+        setShape(numSides, startPoint, new Point2D(startPoint.getX()+sideLength, startPoint.getY()));
     }
     
-    public final void setShape(int numSides, double sideLength, Point2D startPoint, Point2D endPoint) throws IllegalArgumentException{
+    public final void setShape(int numSides, Point2D startPoint, Point2D endPoint) throws IllegalArgumentException{
         if(numSides < 0)
             throw new IllegalArgumentException("numSides cannot be less than 0");
-        if(sideLength < 0)
-            throw new IllegalArgumentException("sideLength cannot be less than 0");
         if(startPoint == null)
             throw new IllegalArgumentException("startPoint cannot be null");
         
         getChildren().clear();
-        internalShape.getPoints().clear();
         controlPoints.clear();
         
         controlPoints.add(new ControlPoint(this, startPoint));
         if(endPoint != null){
+            triggerListenerFlag = false;
+            sideLengthProperty.set(startPoint.distance(endPoint));
+            triggerListenerFlag = true;
+            
             controlPoints.add(new ControlPoint(this, endPoint));
 
             Point2D beforeLast = startPoint;
@@ -205,7 +214,7 @@ public final class Room extends Parent implements ModifiableProperties, Translat
     }
     
     public void normalizeShape(){
-        setShape(getNumSides(), getSideLength(),
+        setShape(getNumSides(),
                 new Point2D(internalShape.getPoints().get(0),
                             internalShape.getPoints().get(1)),
                 new Point2D(internalShape.getPoints().get(2),
