@@ -8,8 +8,11 @@ package mapmaker.uielements;
 import java.util.function.Function;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.css.PseudoClass;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 
 /**
  *
@@ -35,6 +38,7 @@ public class ValidatedTextField extends TextField {
     };
     
     Function<String,Boolean> validateFunction;
+    Tooltip tp;
     
     public ValidatedTextField(){
         this("");
@@ -46,17 +50,30 @@ public class ValidatedTextField extends TextField {
     
     public ValidatedTextField(String text, Function<String,Boolean> validateFunction){
         super(text);
+        Tooltip tp = new Tooltip("Invalid Input");
         setValidateFunction(validateFunction);
         textProperty().addListener((o, oV, nV) -> {
             if(this.validateFunction != null)
                 setInvalid(this.validateFunction.apply(nV));
+        });
+        invalidProperty().addListener((o, oV, nV)->{
+            if(nV){
+                Tooltip.install(this, tp);
+            }
+            else{
+                Tooltip.uninstall(this, tp);
+            }
         });
         getStyleClass().add("validated-text-field");
     }
     
     public boolean         isInvalid(){return invalidProperty.get();}
     public void            setInvalid(boolean invalid){invalidProperty.set(invalid);}
-    public BooleanProperty invalidProperty(){return invalidProperty;}
+    public final BooleanProperty invalidProperty(){return invalidProperty;}
+    
+    public final String    getTooltipText(){return tooltipTextProperty().get();}
+    public final void      setInvalidTooltipText(String text){tooltipTextProperty().set(text);}
+    public final StringProperty tooltipTextProperty(){return tp.textProperty();}
     
     public final void      setValidateFunction(Function<String,Boolean> validateFunction){
         this.validateFunction = validateFunction;

@@ -1,16 +1,19 @@
 package mapmaker.tool;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.stream.Stream;
+import java.util.Set;
 import javafx.geometry.Point2D;
+import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import mapmaker.mapelement.ControlPoint;
-import mapmaker.mapelement.TranslatableElement;
 import mapmaker.mapelement.Room;
+import mapmaker.mapelement.TranslatableElement;
 import mapmaker.mapelement.SelectableElement;
 
 /**
@@ -19,7 +22,7 @@ import mapmaker.mapelement.SelectableElement;
  */
 public class MoveTool extends Tool {
     Point2D lastPoint = null;
-    final ArrayList<TranslatableElement> toMoveList = new ArrayList<>();
+    final Set<TranslatableElement> toMoveSet = new HashSet<>();
     
     public MoveTool(Pane target){
         super("Move Tool", "Click and drag to move selected control points around the pane", target);
@@ -39,49 +42,43 @@ public class MoveTool extends Tool {
         return finalList;
     }
     
-    private void cleanUpControlPointOfRegularRooms(){
-        ArrayList<Room> toAdd = new ArrayList<>();
-        ArrayList<ControlPoint> toRemove = new ArrayList<>();
-        toMoveList.stream()
-            .filter((te)->(te instanceof ControlPoint))
-            .forEach((te)->{
-                ControlPoint cp = ((ControlPoint)te);
-                Room owner = cp.getOwner();
-                if(owner.isRegular()){
-                    if(!toAdd.contains(owner))
-                        toAdd.add(owner);
-                    owner.getControlPoints()
-                        .stream()
-                        .filter((c)->(!toRemove.contains(c)))
-                        .forEach((c)->{
-                            toRemove.add(c);
-                        });
-                }
-            });
-        toMoveList.addAll(toAdd);
-        toMoveList.removeAll(toRemove);
+    private Node addPointOrRoom(ControlPoint cp){
+        if(cp.getOwner().isRegular())
+            return cp.getOwner();
+        return cp;
     }
     
     @Override
     public void mousePressed(MouseEvent e) {
+        target.getScene().setCursor(Cursor.MOVE);
         lastPoint = new Point2D(e.getX(), e.getY());
-        
+                
         getSelectedChildren(target).stream()
             .filter((child)->(child instanceof TranslatableElement))
             .forEach((child)->{
-                toMoveList.add((TranslatableElement)child);
+                if(child instanceof ControlPoint)
+                    toMoveSet.add((TranslatableElement) addPointOrRoom((ControlPoint)child));
+                else if(!toMoveSet.contains((TranslatableElement)child))
+                    toMoveSet.add((TranslatableElement)child);
             });
         
-        if(!(toMoveList.size() > 0)){
-            target.getChildren().stream()
-                    .filter((child)->(child instanceof TranslatableElement))
-                    .filter((child)->(child.contains(e.getX(), e.getY())))
-                    .findFirst().ifPresent((c)->{
-                        toMoveList.add((TranslatableElement)c);
-                    });
+        Iterator<Node> iterN = target.getChildren().iterator();
+        while(iterN.hasNext() && toMoveSet.size() < 1){
+            Node n = iterN.next();
+            if(n instanceof TranslatableElement){
+                if(n instanceof Room){
+                    Iterator<ControlPoint> iterCP = ((Room)n).getControlPoints().iterator();
+                    while(iterCP.hasNext() && toMoveSet.size() < 1){
+                        ControlPoint cp = iterCP.next();
+                        if(cp.contains(lastPoint)){
+                            toMoveSet.add((TranslatableElement)addPointOrRoom(cp));
+                        }
+                    }
+                }
+                if(toMoveSet.size() < 1 && n.contains(lastPoint))
+                    toMoveSet.add((TranslatableElement)n);
+            }
         }
-        
-        cleanUpControlPointOfRegularRooms();
     }
 
     @Override
@@ -90,14 +87,13 @@ public class MoveTool extends Tool {
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        toMoveList.clear();
+        toMoveSet.clear();
+        target.getScene().setCursor(Cursor.DEFAULT);
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        toMoveList.stream().forEach((te)->{
-            if(te instanceof ControlPoint)
-                if(((ControlPoint) te).getOwner().isRegular())
+        toMoveSet.stream().forEach((te)->{
             te.translate(e.getX()-lastPoint.getX(),e.getY()-lastPoint.getY());
         });
         lastPoint = new Point2D(e.getX(), e.getY());

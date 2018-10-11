@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.SimpleStringProperty;
@@ -296,6 +297,9 @@ public class MapMaker extends Application {
                 room.setSelected(false);
                 });
             }
+        });
+        
+        roomListView.getSelectionModel().selectedItemProperty().addListener((o, oV, nV)->{
             Label label = roomListView.getSelectionModel().getSelectedItem();
             if(label != null){
                 Room room = ((Room) label.getUserData());
@@ -317,6 +321,9 @@ public class MapMaker extends Application {
                     });
                     r.selectedProperty().addListener((o, oV, nV) -> {
                         newRoomLabel.setStyle((nV ? "-fx-background-color: gold" : null));
+                    });
+                    r.setOnMouseClicked((e) -> {
+                        roomListView.getSelectionModel().select(newRoomLabel);
                     });
                     roomList.add(newRoomLabel);
                 });
@@ -421,6 +428,16 @@ public class MapMaker extends Application {
                     tf.setOnKeyReleased((e) -> {
                         if(!tf.isInvalid()){
                             ((IntegerProperty) p).set(Integer.parseInt(tf.getText()));
+                        }
+                    });
+                }
+                else if(p instanceof DoubleProperty){
+                    tf.setValidateFunction((s) -> {
+                        return !(Pattern.compile("\\d+\\.?\\d+").matcher(s).matches() && Double.parseDouble(s) > 1);
+                    });
+                    tf.setOnKeyReleased((e) -> {
+                        if(!tf.isInvalid()){
+                            ((DoubleProperty) p).set(Double.parseDouble(tf.getText()));
                         }
                     });
                 }

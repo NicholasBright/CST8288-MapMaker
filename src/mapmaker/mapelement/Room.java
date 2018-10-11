@@ -8,10 +8,12 @@ package mapmaker.mapelement;
 import java.util.HashMap;
 import java.util.List;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -33,10 +35,15 @@ import javafx.scene.transform.Rotate;
 public final class Room extends Parent implements ModifiableProperties, TranslatableElement, SelectableElement {
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     
-    private double sideLength;
     private ObservableList<ControlPoint> controlPoints = FXCollections.observableArrayList();
     private RoomShape internalShape = new RoomShape();
     
+    private final SimpleDoubleProperty sideLengthProperty = new SimpleDoubleProperty(){
+        @Override
+        public String getName(){
+            return "Side length";
+        }
+    };
     private final SimpleStringProperty polygonNameProperty = new SimpleStringProperty(){
         @Override
         public String getName(){
@@ -69,7 +76,8 @@ public final class Room extends Parent implements ModifiableProperties, Translat
         propertyList.addAll(
                 polygonNameProperty,
                 regularProperty,
-                numSidesProperty
+                numSidesProperty,
+                sideLengthProperty
         );
         return propertyList;
     }
@@ -134,8 +142,8 @@ public final class Room extends Parent implements ModifiableProperties, Translat
     }
     
     public Room(int numSides, double sideLength, Point2D startPoint, Point2D firstSideEndPoint){
-        numSidesProperty.set(numSides);
-        this.sideLength = sideLength;
+        numSidesProperty().set(numSides);
+        sideLengthProperty().set(sideLength);
         setShape(numSides, sideLength, startPoint, firstSideEndPoint);
         addListenerForCPList();
         numSidesProperty().addListener((o, oV, nV) -> {
@@ -146,7 +154,7 @@ public final class Room extends Parent implements ModifiableProperties, Translat
     }
     
     public final void setShape(){
-        setShape(numSidesProperty().get(),sideLength, controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
+        setShape(numSidesProperty().get(),sideLengthProperty().get(), controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
     }
     
     public final void setShape(Point2D startPoint, Point2D endPoint) throws IllegalArgumentException{
@@ -213,7 +221,15 @@ public final class Room extends Parent implements ModifiableProperties, Translat
     }
     
     public double getSideLength(){
-        return sideLength;
+        return sideLengthProperty.get();
+    }
+    
+    public void setSideLength(double sideLength){
+        sideLengthProperty().set(sideLength);
+    }
+    
+    public DoubleProperty sideLengthProperty(){
+        return sideLengthProperty;
     }
     
     @Override
