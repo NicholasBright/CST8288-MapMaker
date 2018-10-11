@@ -5,8 +5,6 @@
  */
 package mapmaker.tool;
 
-import java.util.function.Consumer;
-import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
@@ -14,6 +12,7 @@ import javafx.scene.Parent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import mapmaker.mapelement.SelectableElement;
 
 /**
@@ -60,6 +59,9 @@ public class SelectTool extends Tool {
             target.getChildren().remove(selectedArea);*/
             if(e.getTarget() instanceof SelectableElement)
                 ((SelectableElement)e.getTarget()).setSelected(true);
+            if(e.getClickCount() > 1)
+                if(e.getTarget() instanceof Node)
+                    ((Node)e.getTarget()).toFront();
             target.getChildren().remove(selectedArea);
         }
     }

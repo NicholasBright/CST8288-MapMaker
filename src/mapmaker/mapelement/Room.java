@@ -87,12 +87,6 @@ public final class Room
             }
         }
     };
-    /*private final BooleanProperty selectedProperty = new SimpleBooleanProperty(false){
-        @Override
-        public String getName(){
-            return "Selected";
-        }
-    };*/
     private final BooleanProperty regularProperty = new SimpleBooleanProperty(true){
         @Override
         public String getName(){
@@ -158,6 +152,44 @@ public final class Room
         public void setSelected(boolean selected){
             this.selectedProperty.set(selected);
         }
+        
+        @Override
+        public void toFront(){
+            Room.this.toFront();
+        }
+    }
+    
+    public Room(){
+        numSidesProperty().set(0);
+        numSidesProperty().addListener((o, oV, nV) -> {
+            if(triggerListenerFlag){
+                if((Integer)nV>1 && isRegular())
+                    if((Integer)oV == 1)
+                        setShape((Integer)nV, getSideLength(), controlPoints.get(0).getCenter());
+                    else
+                        setShape((Integer)nV, controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
+                else
+                    fixToPoints();
+            }
+        });
+        regularProperty().addListener((o, oV, nV)->{
+            if(triggerListenerFlag){
+                if(controlPoints.size()>1)
+                    setShape(numSidesProperty().get(), controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
+            }
+        });
+        sideLengthProperty().addListener((o, oV, nV)->{
+            if(triggerListenerFlag){
+                if(controlPoints.size()>1){
+                    Point2D vectorToEnd = new Point2D(
+                            controlPoints.get(1).getCenterX() - controlPoints.get(0).getCenterX(),
+                            controlPoints.get(1).getCenterY() - controlPoints.get(0).getCenterY());
+                    vectorToEnd = vectorToEnd.normalize().multiply((Double)nV);
+                    Point2D newEnd = new Point2D(controlPoints.get(0).getCenterX()+vectorToEnd.getX(),controlPoints.get(0).getCenterY()+vectorToEnd.getY());
+                    setShape(numSidesProperty().get(), controlPoints.get(0).getCenter(), newEnd);
+                }
+            }
+        });
     }
     
     public Room(Point2D startPoint){
@@ -177,34 +209,8 @@ public final class Room
     }
     
     public Room(int numSides, Point2D startPoint, Point2D firstSideEndPoint){
-        numSidesProperty().set(numSides);
+        this();
         setShape(numSides, startPoint, firstSideEndPoint);
-        numSidesProperty().addListener((o, oV, nV) -> {
-            if((Integer)nV>1)
-                if((Integer)oV == 1)
-                    setShape((Integer)nV, getSideLength(), controlPoints.get(0).getCenter());
-                else
-                    setShape((Integer)nV, controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
-            else
-                fixToPoints();
-        });
-        regularProperty().addListener((o, oV, nV)->{
-            if(controlPoints.size()>1)
-                setShape(numSidesProperty().get(), controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
-        });
-        sideLengthProperty().addListener((o, oV, nV)->{
-            if(triggerListenerFlag){
-                if(controlPoints.size()>1){
-                    Point2D vectorToEnd = new Point2D(
-                            controlPoints.get(1).getCenterX() - controlPoints.get(0).getCenterX(),
-                            controlPoints.get(1).getCenterY() - controlPoints.get(0).getCenterY());
-                    vectorToEnd = vectorToEnd.normalize().multiply((Double)nV);
-                    Point2D newEnd = new Point2D(controlPoints.get(0).getCenterX()+vectorToEnd.getX(),controlPoints.get(0).getCenterY()+vectorToEnd.getY());
-                    setShape(numSidesProperty().get(), controlPoints.get(0).getCenter(), newEnd);
-                }
-            }
-        });
-        //internalShape.selectedProperty.bind(selectedProperty);
     }
     
     public final void setShape(Point2D startPoint, Point2D endPoint) throws IllegalArgumentException{
@@ -231,6 +237,7 @@ public final class Room
         controlPoints.add(new ControlPoint(this, startPoint));
         if(endPoint != null){
             triggerListenerFlag = false;
+            numSidesProperty().set(numSides);
             sideLengthProperty.set(startPoint.distance(endPoint));
             triggerListenerFlag = true;
             
@@ -347,6 +354,7 @@ public final class Room
             this.getChildren().add(0,internalShape);
             numSidesProperty().set(controlPoints.size()-1);
         }
+        nameProperty().set(null);
     }
     
     public void removeControlPoint(ControlPoint cp){
@@ -359,13 +367,9 @@ public final class Room
             else {
                 controlPoints.remove(cp);
                 numSidesProperty().set(controlPoints.size());
-                /*if(isRegular() && controlPoints.size() > 2)
-                    numSidesProperty().set(controlPoints.size());
-                    //setShape(getNumSides(),controlPoints.get(0).getCenter(),controlPoints.get(1).getCenter());
-                else
-                    fixToPoints();*/
             }
         }
+        nameProperty().set(null);
     }
     
     @Override

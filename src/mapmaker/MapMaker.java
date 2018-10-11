@@ -45,6 +45,7 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import mapmaker.mapelement.Room;
@@ -308,7 +309,7 @@ public class MapMaker extends Application {
         roomListView.getSelectionModel().selectedItemProperty().addListener((o, oV, nV)->{
             optionsList.getItems().clear();
             if(nV != null){
-                nV.setStyle("-fx-underline: true; ");
+                //nV.setStyle("-fx-underline: true; ");
                 optionsList.setItems(buildOptionList(((Room)nV.getUserData()).getModifiablePropertiesList()));
             }
         });
@@ -456,9 +457,18 @@ public class MapMaker extends Application {
                 }
                 ctrl = tf;
             }
-
+            
+            ctrl.parentProperty().addListener((o,oV,nV)->{
+                if(nV instanceof Region)
+                    ctrl.prefWidthProperty().bind(((Region)nV).widthProperty());
+            });
+            
             Label optionLabel = new Label(p.getName(), ctrl);
             optionLabel.setContentDisplay(ContentDisplay.BOTTOM);
+            optionLabel.parentProperty().addListener((o,oV,nV)->{
+                if(nV instanceof Region)
+                    optionLabel.prefWidthProperty().bind(((Region)nV).widthProperty());
+            });
             optList.add(optionLabel);
         });
         return optList;

@@ -33,7 +33,8 @@ public final class CreateRoomTool extends Tool {
         }
         else if(sides < 0 && customFlag == false){
             customFlag = true;
-            createdRoom = new Room(e.getX(), e.getY());
+            createdRoom = new Room();//(e.getX(), e.getY());
+            createdRoom.setRegular(false);
             target.getChildren().add(createdRoom);
         }
     }
