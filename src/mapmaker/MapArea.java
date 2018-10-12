@@ -10,10 +10,6 @@ import javafx.scene.layout.Pane;
 import mapmaker.mapelement.Room;
 import mapmaker.tool.ToolState;
 
-/**
- *
- * @author owner
- */
 public class MapArea extends Pane {
     
     private final ObservableList<Room> rooms = FXCollections.observableArrayList();
@@ -70,7 +66,6 @@ public class MapArea extends Pane {
             }
         });
     }
-    
     
     public ObservableList<Room> getRooms(){
         return rooms;

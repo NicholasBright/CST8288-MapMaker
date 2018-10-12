@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mapmaker;
 
 import java.io.FileNotFoundException;
@@ -59,10 +54,6 @@ import mapmaker.tool.Tool;
 import mapmaker.tool.ToolState;
 import mapmaker.uielements.ValidatedTextField;
 
-/**
- *
- * @author owner
- */
 public class MapMaker extends Application {
     private MapArea                 mapArea;
     private ScrollPane              centerPane;
@@ -76,9 +67,6 @@ public class MapMaker extends Application {
     private SimpleStringProperty    descriptionProperty;
     private ObservableList<String>  messageList;
     
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
         launch(args);
     }
@@ -107,7 +95,7 @@ public class MapMaker extends Application {
         rootScene.getStylesheets().clear();
         
         try {
-            rootScene.getStylesheets().add( ResourceLoader.getCSSUri("style.css"));
+            rootScene.getStylesheets().add( ResourceManager.get().getCSSUri("style.css"));
         }
         catch (FileNotFoundException e){
             Logger.getLogger(MapMaker.class.getSimpleName()).log(Level.SEVERE, e.toString(), e);
@@ -120,8 +108,6 @@ public class MapMaker extends Application {
         mapArea = new MapArea();
         
         centerPane = new ScrollPane(mapArea);
-        /*centerPane.vminProperty().bind(null);
-        centerPane.setHmin(-1000);*/
         
         menuBar = createMenuBar(
             createMenu("File",
@@ -148,7 +134,7 @@ public class MapMaker extends Application {
                             alert.setTitle("Credits");
                             alert.setHeaderText("Credits");
                             try {
-                                alert.setContentText( ResourceLoader.loadTxtToString("credits.txt") );
+                                alert.setContentText( ResourceManager.get().loadTxtToString("credits.txt") );
                             } catch (FileNotFoundException ex) {
                                 Logger.getLogger(this.getClass().getSimpleName()).log(Level.SEVERE, ex.toString(), ex);
                                 alert.setContentText( "Credits file not found. Report error to developer." );
@@ -169,7 +155,7 @@ public class MapMaker extends Application {
                             alert.setTitle("Info");
                             alert.setHeaderText("Info");
                             try {
-                                alert.setContentText( ResourceLoader.loadTxtToString("info.txt") );
+                                alert.setContentText( ResourceManager.get().loadTxtToString("info.txt") );
                             } catch (FileNotFoundException ex) {
                                 Logger.getLogger(this.getClass().getSimpleName()).log(Level.SEVERE, ex.toString(), ex);
                                 alert.setContentText( "Info file not found. Report error to developer." );
@@ -191,7 +177,7 @@ public class MapMaker extends Application {
                             alert.setTitle("Help");
                             alert.setHeaderText("Help");
                             try {
-                                alert.setContentText( ResourceLoader.loadTxtToString("help.txt") );
+                                alert.setContentText( ResourceManager.get().loadTxtToString("help.txt") );
                             } catch (FileNotFoundException ex) {
                                 Logger.getLogger(this.getClass().getSimpleName()).log(Level.SEVERE, ex.toString(), ex);
                                 alert.setContentText( "Help file not found. Report error to developer." );

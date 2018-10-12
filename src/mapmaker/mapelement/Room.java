@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mapmaker.mapelement;
 
 import java.util.List;
@@ -25,10 +20,6 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.transform.Rotate;
 import mapmaker.MapArea;
 
-/**
- *
- * @author nick
- */
 public final class Room
         extends Parent
         implements ModifiableProperties, TranslatableElement {
@@ -39,13 +30,13 @@ public final class Room
     private ObservableList<ControlPoint> controlPoints = FXCollections.observableArrayList();
     private RoomShape internalShape = new RoomShape();
     
-    private final SimpleDoubleProperty sideLengthProperty = new SimpleDoubleProperty(-1){
+    private final DoubleProperty sideLengthProperty = new SimpleDoubleProperty(-1){
         @Override
         public String getName(){
             return "Side length";
         }
     };
-    private final SimpleStringProperty nameProperty = new SimpleStringProperty(null){
+    private final StringProperty nameProperty = new SimpleStringProperty(null){
         @Override
         public String getName(){
             return "Polygon Name";
@@ -196,11 +187,11 @@ public final class Room
         this(startPoint.getX(), startPoint.getY());
     }
     
-    public Room(Double x, Double y){
+    public Room(double x, double y){
         this(0, 0, x, y);
     }
     
-    public Room(int numSides, double sideLength, Double startX, Double startY){
+    public Room(int numSides, double sideLength, double startX, double startY){
         this(numSides, new Point2D(startX, startY), null);
     }
     
@@ -208,17 +199,13 @@ public final class Room
         this(numSides, startPoint, new Point2D(startPoint.getX()+sideLength,startPoint.getY()));
     }
     
-    public Room(int numSides, Point2D startPoint, Point2D firstSideEndPoint){
+    public Room(int numSides, Point2D startPoint, Point2D endPoint){
         this();
-        setShape(numSides, startPoint, firstSideEndPoint);
+        setShape(numSides, startPoint, endPoint);
     }
     
     public final void setShape(Point2D startPoint, Point2D endPoint) throws IllegalArgumentException{
         setShape(getNumSides(), startPoint, endPoint);
-    }
-    
-    public final void setShape(Point2D startPoint) throws IllegalArgumentException{
-        setShape(getNumSides(), getSideLength(), startPoint);
     }
     
     public final void setShape(int numSides, double sideLength, Point2D startPoint) throws IllegalArgumentException{
