@@ -277,6 +277,7 @@ public class MapMaker extends Application {
         );
         
         detailsBox = new VBox();
+        detailsBox.setId("DetailsBox");
         detailsBox.prefHeightProperty().bind(rootPane.heightProperty());
         detailsBox.prefWidthProperty().bind(rootPane.widthProperty().divide(5.0));
         
@@ -284,6 +285,15 @@ public class MapMaker extends Application {
         optionsList.setId("OptionsPane");
         optionsList.prefHeightProperty().bind(detailsBox.heightProperty().multiply(0.5));
         optionsList.maxWidthProperty().bind(detailsBox.widthProperty());
+        optionsList.getItems().addListener((ListChangeListener.Change<? extends Label> c)->{
+            while(c.next()){
+                c.getAddedSubList()
+                    .stream()
+                    .forEach((l) -> {
+                        l.prefWidthProperty().bind(optionsList.widthProperty());
+                    });
+            }
+        });
         
         ObservableList<Label> roomList = FXCollections.observableArrayList();
         ListView<Label> roomListView = new ListView<>(roomList);
@@ -322,9 +332,6 @@ public class MapMaker extends Application {
                     Label newRoomLabel = new Label();
                     newRoomLabel.textProperty().bind(r.nameProperty());
                     newRoomLabel.setUserData(r);
-                    /*newRoomLabel.addEventHandler(MouseEvent.MOUSE_CLICKED, (e) -> {
-                        r.setSelected(true);
-                    });*/
                     r.selectedProperty().addListener((o, oV, nV) -> {
                         if(nV)
                             roomListView.getSelectionModel().select(newRoomLabel);
@@ -415,11 +422,11 @@ public class MapMaker extends Application {
         propList.stream().forEach((p)->{
             Control ctrl;
             if(p instanceof BooleanProperty){
-                ComboBox<Boolean> boolCB = new ComboBox<>();
-                boolCB.getItems().addAll(true, false);
-                boolCB.valueProperty().set(((BooleanProperty) p).getValue());
+                ComboBox<String> boolCB = new ComboBox<>();
+                boolCB.getItems().addAll("True", "False");
+                boolCB.valueProperty().set(((BooleanProperty) p).getValue() ? "True" : "False");
                 boolCB.valueProperty().addListener((o, oV, nV) -> {
-                    ((BooleanProperty) p).set(nV);
+                    ((BooleanProperty) p).set(Boolean.parseBoolean(nV));
                 });
                 ctrl = boolCB;
             }
@@ -458,17 +465,8 @@ public class MapMaker extends Application {
                 ctrl = tf;
             }
             
-            ctrl.parentProperty().addListener((o,oV,nV)->{
-                if(nV instanceof Region)
-                    ctrl.prefWidthProperty().bind(((Region)nV).widthProperty());
-            });
-            
             Label optionLabel = new Label(p.getName(), ctrl);
             optionLabel.setContentDisplay(ContentDisplay.BOTTOM);
-            optionLabel.parentProperty().addListener((o,oV,nV)->{
-                if(nV instanceof Region)
-                    optionLabel.prefWidthProperty().bind(((Region)nV).widthProperty());
-            });
             optList.add(optionLabel);
         });
         return optList;

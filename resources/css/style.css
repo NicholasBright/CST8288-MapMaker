@@ -132,6 +132,23 @@
     -fx-faint-focus-color: transparent;
 }
 
-.list-cell:selected {
-    /*-fx-text-fill: black;*/
+.list-view{
+    -fx-background-color:white;
+}
+
+.list-cell{
+    -fx-alignment: center;
+    -fx-text-alignment: right;
+}
+
+.list-cell:even, .list-cell:odd {
+    -fx-background-color: -fx-background;
+}
+
+.text-field{
+    -fx-padding: 5px 2px 5px 2px;
+}
+
+#DetailsBox {
+    -fx-min-width: 180px;
 }
