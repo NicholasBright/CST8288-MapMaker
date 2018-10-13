@@ -22,7 +22,7 @@ import mapmaker.MapArea;
 
 public final class Room
         extends Parent
-        implements ModifiableProperties, TranslatableElement {
+        implements ModifiableProperties {
     private boolean triggerListenerFlag = true;
     
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
@@ -102,7 +102,7 @@ public final class Room
         return propertyList;
     }
     
-    private class RoomShape extends Polygon implements RemovableElement, SelectableElement{
+    public class RoomShape extends Polygon implements RemovableElement, SelectableElement, TranslatableElement{
         
         private final BooleanProperty selectedProperty = new SimpleBooleanProperty(false) {
             @Override
@@ -147,6 +147,23 @@ public final class Room
         @Override
         public void toFront(){
             Room.this.toFront();
+        }
+    
+        @Override
+        public void translate(double xTrans, double yTrans){
+            Bounds bounds = getBoundsInParent();
+
+            if(bounds.getMinX()+xTrans < 0)
+                xTrans = bounds.getMinX() * -1;
+
+            if(bounds.getMinY()+yTrans < 0)
+                yTrans = bounds.getMinY() * -1;
+
+            double x = xTrans;
+            double y = yTrans;
+            controlPoints.stream().forEach((cp) -> {
+                cp.translate(x, y);
+            });
         }
     }
     
@@ -359,20 +376,7 @@ public final class Room
         nameProperty().set(null);
     }
     
-    @Override
-    public void translate(double xTrans, double yTrans){
-        Bounds bounds = getBoundsInParent();
-        
-        if(bounds.getMinX()+xTrans < 0)
-            xTrans = bounds.getMinX() * -1;
-        
-        if(bounds.getMinY()+yTrans < 0)
-            yTrans = bounds.getMinY() * -1;
-        
-        double x = xTrans;
-        double y = yTrans;
-        controlPoints.stream().forEach((cp) -> {
-            cp.translate(x, y);
-        });
+    public RoomShape getShape(){
+        return internalShape;
     }
 }
