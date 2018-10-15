@@ -7,6 +7,8 @@ package mapmaker.mapelement;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.BooleanPropertyBase;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.css.PseudoClass;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
@@ -17,7 +19,7 @@ import javafx.scene.shape.Circle;
  * @author owner
  */
 public class ControlPoint extends Circle implements TranslatableElement, SelectableElement, RemovableElement {
-    Room owner;
+    PolyRoom owner;
     
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     
@@ -38,15 +40,29 @@ public class ControlPoint extends Circle implements TranslatableElement, Selecta
         }
     };
     
-    public ControlPoint (Room owner){
+    private final DoubleProperty centerX = new SimpleDoubleProperty(){
+        @Override
+        public String getName(){
+            return "Center X";
+        }
+    };
+    
+    private final DoubleProperty centerY = new SimpleDoubleProperty(){
+        @Override
+        public String getName(){
+            return "Center Y";
+        }
+    };
+    
+    public ControlPoint (PolyRoom owner){
         this(owner, 100.0,100.0);
     }
     
-    public ControlPoint(Room owner, Point2D pos){
+    public ControlPoint(PolyRoom owner, Point2D pos){
         this(owner, pos.getX(), pos.getY());
     }
     
-    public ControlPoint(Room owner, Double x, Double y){
+    public ControlPoint(PolyRoom owner, Double x, Double y){
         super(x, y, 3.5);
         this.getStyleClass().add("control-point");
         this.owner = owner;
@@ -60,37 +76,19 @@ public class ControlPoint extends Circle implements TranslatableElement, Selecta
         this.selected.set(selected);
     }
     
-    public void setPosition(Point2D point){
-        setPosition(point.getX(), point.getY());
-    }
-    
-    public void setPosition(Double x, Double y){
-        setCenterX(x);
-        setCenterY(y);
-        owner.fixToPoints();
-    }
-    
-    public void setX(double x){
-        super.setCenterX(x);
-        owner.fixToPoints();
-    }
-    
-    public void setY(double y){
-        super.setCenterY(y);
-        owner.fixToPoints();
-    }
-    
     public Point2D getCenter(){
         return new Point2D(getCenterX(), getCenterY());
     }
     
     @Override
     public void translate(double xTrans, double yTrans){
-        setX(getCenterX() + xTrans);
-        setY(getCenterY() + yTrans);
+        if(!owner.isRegular()){
+            setCenterX(getCenterX() + xTrans);
+            setCenterY(getCenterY() + yTrans);
+        }
     }
     
-    public Room getOwner(){
+    public PolyRoom getOwner(){
         return owner;
     }
     

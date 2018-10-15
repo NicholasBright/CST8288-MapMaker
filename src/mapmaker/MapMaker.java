@@ -40,10 +40,9 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import mapmaker.mapelement.Room;
+import mapmaker.mapelement.PolyRoom;
 import mapmaker.tool.CreateRoomTool;
 import mapmaker.tool.DoorTool;
 import mapmaker.tool.EraseTool;
@@ -231,10 +230,6 @@ public class MapMaker extends Application {
             createMenuItem("Hexagon", e -> {
                     ToolState.getToolState().setActiveTool(new CreateRoomTool(mapArea), 6);
                     descriptionProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
-            }),
-            createMenuItem("Custom Room", e -> {
-                    ToolState.getToolState().setActiveTool(new CreateRoomTool(mapArea), -1);
-                    descriptionProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
             })
         );
         
@@ -297,7 +292,7 @@ public class MapMaker extends Application {
             
             Label label = roomListView.getSelectionModel().getSelectedItem();
             if(label != null){
-                Room room = ((Room) label.getUserData());
+                PolyRoom room = ((PolyRoom) label.getUserData());
                 room.setSelected(true);
             }
         });
@@ -306,11 +301,11 @@ public class MapMaker extends Application {
             optionsList.getItems().clear();
             if(nV != null){
                 //nV.setStyle("-fx-underline: true; ");
-                optionsList.setItems(buildOptionList(((Room)nV.getUserData()).getModifiablePropertiesList()));
+                optionsList.setItems(buildOptionList(((PolyRoom)nV.getUserData()).getModifiablePropertiesList()));
             }
         });
         
-        mapArea.getRooms().addListener((ListChangeListener.Change<? extends Room> c) -> {
+        mapArea.getRooms().addListener((ListChangeListener.Change<? extends PolyRoom> c) -> {
             while(c.next()){
                 c.getAddedSubList()
                  .stream()

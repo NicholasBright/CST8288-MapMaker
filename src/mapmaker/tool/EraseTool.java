@@ -6,7 +6,7 @@
 package mapmaker.tool;
 
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Pane;
+import mapmaker.MapArea;
 import mapmaker.mapelement.RemovableElement;
 
 /**
@@ -15,7 +15,7 @@ import mapmaker.mapelement.RemovableElement;
  */
 public class EraseTool extends Tool {
     
-    public EraseTool(Pane target){
+    public EraseTool(MapArea target){
         super("Erase Tool", "Click on any room to erase it", target);
     }
     

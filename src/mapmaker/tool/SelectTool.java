@@ -13,6 +13,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import mapmaker.MapArea;
 import mapmaker.mapelement.SelectableElement;
 
 /**
@@ -24,7 +25,7 @@ public class SelectTool extends Tool {
     Rectangle selectedArea;
     boolean draggedFlag;
     
-    public SelectTool(Pane target){
+    public SelectTool(MapArea target){
         super("Select Tool", "Click and drag to select Control Points, or click on a Room to select all of it's Control Points", target);
         selectedArea = new Rectangle(0,0, 0, 10.0);
         //This style is programatically set to stop the select area from breaking out of the pane

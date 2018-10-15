@@ -6,7 +6,7 @@
 package mapmaker.tool;
 
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Pane;
+import mapmaker.MapArea;
 
 /**
  *
@@ -14,7 +14,7 @@ import javafx.scene.layout.Pane;
  */
 public class PathTool extends Tool {
     
-    public PathTool(Pane target){
+    public PathTool(MapArea target){
         super("Path Tool","Click from one Door to another to create a path", target);
     }
     

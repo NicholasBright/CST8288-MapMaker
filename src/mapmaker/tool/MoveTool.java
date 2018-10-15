@@ -11,6 +11,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import mapmaker.MapArea;
 import mapmaker.mapelement.ControlPoint;
 import mapmaker.mapelement.Room;
 import mapmaker.mapelement.TranslatableElement;
@@ -24,7 +25,7 @@ public class MoveTool extends Tool {
     Point2D lastPoint = null;
     final Set<TranslatableElement> toMoveSet = new HashSet<>();
     
-    public MoveTool(Pane target){
+    public MoveTool(MapArea target){
         super("Move Tool", "Click and drag to move selected control points around the pane", target);
     }
     
