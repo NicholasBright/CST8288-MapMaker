@@ -14,7 +14,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
-import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Polygon;
 import javafx.scene.transform.Rotate;
@@ -28,13 +27,6 @@ public final class PolyRoom
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     
     private ObservableList<ControlPoint> controlPoints = FXCollections.observableArrayList();
-    
-    private final DoubleProperty sideLengthProperty = new SimpleDoubleProperty(-1){
-        @Override
-        public String getName(){
-            return "Side length";
-        }
-    };
     
     private final DoubleProperty radiusProperty = new SimpleDoubleProperty(0.0){
         @Override
@@ -106,7 +98,7 @@ public final class PolyRoom
         propertyList.addAll(nameProperty,
                 regularProperty,
                 numSidesProperty,
-                sideLengthProperty
+                radiusProperty
         );
         return propertyList;
     }
@@ -182,46 +174,51 @@ public final class PolyRoom
         
         setRadius((new Point2D(firstX, firstY)).distance(getCenterX(), getCenterY()));
         xProperty.set(centerX);
+        yProperty.set(centerY);
         
         controlPoints.clear();
         
         ControlPoint firstPoint = new ControlPoint(this, firstX, firstY);
         firstPoint.centerXProperty().addListener((o, oV, nV)->{
-            if(isRegular())
-                redraw(Double.class.cast(nV), firstPoint.getCenterY());
-            else
-                getPoints().set(controlPoints.indexOf(firstPoint), Double.class.cast(nV));
+            if(triggerListenerFlag){
+                if(isRegular())
+                    redraw(Double.class.cast(nV), firstPoint.getCenterY());
+                else
+                    getPoints().set(controlPoints.indexOf(firstPoint), Double.class.cast(nV));
+            }
         });
         firstPoint.centerYProperty().addListener((o, oV, nV)->{
-            if(isRegular())
-                redraw(firstPoint.getCenterX(), Double.class.cast(nV));
-            else
-                getPoints().set(controlPoints.indexOf(firstPoint)+1, Double.class.cast(nV));
+            if(triggerListenerFlag){
+                if(isRegular())
+                    redraw(firstPoint.getCenterX(), Double.class.cast(nV));
+                else
+                    getPoints().set(controlPoints.indexOf(firstPoint)+1, Double.class.cast(nV));
+            }
         });
+        controlPoints.add(firstPoint);
         
-        Rotate angleBetweenPoints = new Rotate((getNumSides()-2)*180/getNumSides());
-        
-        Point2D lastVector = angleBetweenPoints.deltaTransform(centerX - firstX, centerY - firstY);
-        
-        System.out.println(lastVector);
-        
+        Rotate angleBetweenPoints = new Rotate(180 - (getNumSides()-2)*-180/getNumSides());
+        Point2D lastVector = angleBetweenPoints.deltaTransform(firstX - centerX, firstY - centerY);
         for(int i=1;i<getNumSides();i++){
-            
             double x = lastVector.getX() + centerX;
             double y = lastVector.getY() + centerY;
             
             ControlPoint newPoint = new ControlPoint(this, x, y);
             newPoint.centerXProperty().addListener((o, oV, nV)->{
-                if(isRegular())
-                    redraw(Double.class.cast(nV), newPoint.getCenterY());
-                else
-                    getPoints().set(controlPoints.indexOf(newPoint), Double.class.cast(nV));
+                if(triggerListenerFlag){
+                    if(isRegular())
+                        redraw(Double.class.cast(nV), newPoint.getCenterY());
+                    else
+                        getPoints().set(controlPoints.indexOf(newPoint), Double.class.cast(nV));
+                }
             });
             newPoint.centerYProperty().addListener((o, oV, nV)->{
-                if(isRegular())
-                    redraw(newPoint.getCenterX(), Double.class.cast(nV));
-                else
-                    getPoints().set(controlPoints.indexOf(newPoint)+1, Double.class.cast(nV));
+                if(triggerListenerFlag){
+                    if(isRegular())
+                        redraw(newPoint.getCenterX(), Double.class.cast(nV));
+                    else
+                        getPoints().set(controlPoints.indexOf(newPoint)+1, Double.class.cast(nV));
+                }
             });
             
             controlPoints.add(newPoint);
@@ -235,12 +232,32 @@ public final class PolyRoom
     }
     
     public void normalizeShape(double firstX, double firstY){
+        if(getNumSides() < 1)
+            return;
+        
+        triggerListenerFlag = false;
+        
         setRadius((new Point2D(firstX, firstY)).distance(getCenterX(), getCenterY()));
-        double angle = (getNumSides()-2)*180/getNumSides();
-        controlPoints.stream().forEach((cp)->{
-            cp.setCenterX(getCenterX() + (getRadius() * Math.cos(Math.toRadians(angle*controlPoints.indexOf(cp)))));
-            cp.setCenterY(getCenterY() + (getRadius() * Math.sin(Math.toRadians(angle*controlPoints.indexOf(cp)))));
-        });
+        
+        ControlPoint firstPoint = controlPoints.get(0);
+        firstPoint.setCenterX(firstX);
+        firstPoint.setCenterY(firstY);
+        
+        Rotate angleBetweenPoints = new Rotate(180 - (getNumSides()-2)*-180/getNumSides());
+        Point2D lastVector = angleBetweenPoints.deltaTransform(firstX - getCenterX(), firstY - getCenterY());
+        for(int i=1;i<getNumSides();i++){
+            double x = lastVector.getX() + getCenterX();
+            double y = lastVector.getY() + getCenterY();
+            
+            ControlPoint currPoint = controlPoints.get(i);
+            currPoint.setCenterX(x);
+            currPoint.setCenterY(y);
+            
+            lastVector = angleBetweenPoints.deltaTransform(lastVector.getX(), lastVector.getY());
+        }
+        
+        fixToPoints();
+        triggerListenerFlag = true;
     }
     
     public List<ControlPoint> getControlPoints(){
@@ -249,18 +266,6 @@ public final class PolyRoom
     
     public int getNumSides(){
         return numSidesProperty.get();
-    }
-    
-    public double getSideLength(){
-        return sideLengthProperty.get();
-    }
-    
-    public void setSideLength(double sideLength){
-        sideLengthProperty().set(sideLength);
-    }
-    
-    public DoubleProperty sideLengthProperty(){
-        return sideLengthProperty;
     }
     
     @Override
@@ -319,22 +324,15 @@ public final class PolyRoom
     }
     
     public void addControlPoint(ControlPoint cp) {
-        /*if(!getChildren().contains(cp))
-            getChildren().add(cp);*/
         if(!controlPoints.contains(cp)){
             controlPoints.add(cp);
             getPoints().addAll(cp.getCenterX(), cp.getCenterY());
-            /*this.getChildren().remove(internalShape);
-            this.getChildren().add(0,internalShape);*/
             numSidesProperty().set(controlPoints.size()-1);
         }
         nameProperty().set(null);
     }
     
     public void removeControlPoint(ControlPoint cp){
-        /*if(getChildren().contains(cp)){
-            getChildren().remove(cp);
-        }*/
         if(controlPoints.contains(cp)){
             if(controlPoints.size() == 1)
                 ((MapArea)getParent()).getRooms().remove(this);
@@ -348,19 +346,10 @@ public final class PolyRoom
     
     @Override
     public void translate(double xTrans, double yTrans){
-        Bounds bounds = getBoundsInParent();
-        
-        if(bounds.getMinX()+xTrans < 0)
-            xTrans = bounds.getMinX() * -1;
-        
-        if(bounds.getMinY()+yTrans < 0)
-            yTrans = bounds.getMinY() * -1;
-        
         double x = xTrans;
         double y = yTrans;
-        controlPoints.stream().forEach((cp) -> {
-            cp.translate(x, y);
-        });
+        setCenterX(getCenterX() + xTrans);
+        setCenterX(getCenterY() + yTrans);
     }
     
     @Override

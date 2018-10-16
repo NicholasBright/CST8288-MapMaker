@@ -7,11 +7,8 @@ package mapmaker.mapelement;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.BooleanPropertyBase;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.css.PseudoClass;
 import javafx.geometry.Point2D;
-import javafx.scene.Cursor;
 import javafx.scene.shape.Circle;
 
 /**
@@ -37,20 +34,6 @@ public class ControlPoint extends Circle implements TranslatableElement, Selecta
         @Override
         public String getName() {
             return "selected";
-        }
-    };
-    
-    private final DoubleProperty centerX = new SimpleDoubleProperty(){
-        @Override
-        public String getName(){
-            return "Center X";
-        }
-    };
-    
-    private final DoubleProperty centerY = new SimpleDoubleProperty(){
-        @Override
-        public String getName(){
-            return "Center Y";
         }
     };
     
@@ -82,10 +65,8 @@ public class ControlPoint extends Circle implements TranslatableElement, Selecta
     
     @Override
     public void translate(double xTrans, double yTrans){
-        if(!owner.isRegular()){
-            setCenterX(getCenterX() + xTrans);
-            setCenterY(getCenterY() + yTrans);
-        }
+        setCenterX(getCenterX() + xTrans);
+        setCenterY(getCenterY() + yTrans);
     }
     
     public PolyRoom getOwner(){

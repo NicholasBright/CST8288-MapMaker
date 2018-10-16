@@ -23,6 +23,7 @@ public final class CreateRoomTool extends Tool {
         createdRoom.setNumSides(Integer.class.cast(ToolState.getToolState().getOption(0)));
         createdRoom.setCenterX(e.getX());
         createdRoom.setCenterY(e.getY());
+        createdRoom.redraw();
         target.add(createdRoom);
     }
 
@@ -37,7 +38,7 @@ public final class CreateRoomTool extends Tool {
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        createdRoom.redraw(e.getX(), e.getY());
+        createdRoom.normalizeShape(e.getX(), e.getY());
     }
     
     @Override
