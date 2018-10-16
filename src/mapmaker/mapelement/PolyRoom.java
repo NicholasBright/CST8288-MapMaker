@@ -181,8 +181,7 @@ public final class PolyRoom
             return;
         
         setRadius((new Point2D(firstX, firstY)).distance(getCenterX(), getCenterY()));
-        
-        System.out.println(this);
+        xProperty.set(centerX);
         
         controlPoints.clear();
         
@@ -200,13 +199,16 @@ public final class PolyRoom
                 getPoints().set(controlPoints.indexOf(firstPoint)+1, Double.class.cast(nV));
         });
         
-        double angle = (getNumSides()-2)*180/getNumSides();
-        System.out.println(angle);
+        Rotate angleBetweenPoints = new Rotate((getNumSides()-2)*180/getNumSides());
+        
+        Point2D lastVector = angleBetweenPoints.deltaTransform(centerX - firstX, centerY - firstY);
+        
+        System.out.println(lastVector);
         
         for(int i=1;i<getNumSides();i++){
             
-            double x = getCenterX() + (getRadius() * Math.cos(Math.toRadians(angle*i)));
-            double y = getCenterY() + (getRadius() * Math.sin(Math.toRadians(angle*i)));
+            double x = lastVector.getX() + centerX;
+            double y = lastVector.getY() + centerY;
             
             ControlPoint newPoint = new ControlPoint(this, x, y);
             newPoint.centerXProperty().addListener((o, oV, nV)->{
@@ -223,6 +225,7 @@ public final class PolyRoom
             });
             
             controlPoints.add(newPoint);
+            lastVector = angleBetweenPoints.deltaTransform(lastVector.getX(), lastVector.getY());
         }
         
         controlPoints.forEach(cp -> cp.setSelected(selectedProperty().get()));
