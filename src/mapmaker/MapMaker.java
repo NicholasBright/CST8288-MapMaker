@@ -1,7 +1,9 @@
 package mapmaker;
 
 import java.io.FileNotFoundException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -400,55 +402,76 @@ public class MapMaker extends Application {
     
     public ObservableList<Label> buildOptionList(ObservableList<Property> propList){
         ObservableList<Label> optList = FXCollections.observableArrayList();
-        propList.stream().forEach((p)->{
-            Control ctrl;
-            if(p instanceof BooleanProperty){
-                ComboBox<String> boolCB = new ComboBox<>();
-                boolCB.getItems().addAll("True", "False");
-                boolCB.valueProperty().set(((BooleanProperty) p).getValue() ? "True" : "False");
-                boolCB.valueProperty().addListener((o, oV, nV) -> {
-                    ((BooleanProperty) p).set(Boolean.parseBoolean(nV));
-                });
-                ctrl = boolCB;
+        propList.stream().forEach(new Consumer<Property>() {
+            @Override
+            public void accept(Property p) {
+                Control ctrl;
+                if(p instanceof BooleanProperty){
+                    ComboBox<String> boolCB = new ComboBox<>();
+                    boolCB.getItems().addAll("True", "False");
+                    boolCB.valueProperty().set(((BooleanProperty) p).getValue() ? "True" : "False");
+                    boolCB.valueProperty().addListener((o, oV, nV) -> {
+                        ((BooleanProperty) p).set(Boolean.parseBoolean(nV));
+                    });
+                    ctrl = boolCB;
+                }
+                else {
+                    ValidatedTextField tf;
+                    if(p instanceof IntegerProperty){
+                        tf = new ValidatedTextField(p.getValue().toString());
+                        IntegerProperty.class.cast(p).addListener((o, oV, nV)->{
+                            tf.setText(p.getValue().toString());
+                        });
+                        tf.setValidateFunction((s) -> {
+                            return !(Pattern.compile("\\d+").matcher(s).matches() && Integer.parseInt(s) > 0);
+                        });
+                        tf.setOnKeyReleased((e) -> {
+                            if(!tf.isInvalid()){
+                                ((IntegerProperty) p).set(Integer.parseInt(tf.getText()));
+                            }
+                        });
+                    }
+                    else if(p instanceof DoubleProperty){
+                        DecimalFormat df = new DecimalFormat("#.00");
+                        tf = new ValidatedTextField(df.format(p.getValue()));
+                        DoubleProperty.class.cast(p).addListener((o, oV, nV)->{
+                            tf.setText(df.format(nV));
+                        });
+                        tf.setValidateFunction((s) -> {
+                            return !(Pattern.compile("\\d+\\.\\d+").matcher(s).matches() && Double.parseDouble(s) > 0);
+                        });
+                        tf.setOnKeyReleased((e) -> {
+                            if(!tf.isInvalid()){
+                                ((DoubleProperty) p).set(Double.parseDouble(tf.getText()));
+                            }
+                        });
+                    }
+                    else if(p instanceof StringProperty){
+                        tf = new ValidatedTextField(p.getValue().toString());
+                        StringProperty.class.cast(p).addListener((o, oV, nV)->{
+                            tf.setText(p.getValue().toString());
+                        });
+                        tf.setValidateFunction((s) -> {
+                            return false;
+                        });
+                        tf.setOnKeyReleased((e) -> {
+                            if(!tf.isInvalid()){
+                                ((StringProperty) p).set(tf.getText());
+                            }
+                        });
+                    }
+                    else {
+                        tf = new ValidatedTextField(p.getValue().toString());
+                        tf.setDisable(true);
+                    }
+                    
+                    ctrl = tf;
+                }
+                
+                Label optionLabel = new Label(p.getName(), ctrl);
+                optionLabel.setContentDisplay(ContentDisplay.BOTTOM);
+                optList.add(optionLabel);
             }
-            else {
-                ValidatedTextField tf = new ValidatedTextField(p.getValue().toString());
-                if(p instanceof IntegerProperty){
-                    tf.setValidateFunction((s) -> {
-                        return !(Pattern.compile("\\d+").matcher(s).matches() && Integer.parseInt(s) > 0);
-                    });
-                    tf.setOnKeyReleased((e) -> {
-                        if(!tf.isInvalid()){
-                            ((IntegerProperty) p).set(Integer.parseInt(tf.getText()));
-                        }
-                    });
-                }
-                else if(p instanceof DoubleProperty){
-                    tf.setValidateFunction((s) -> {
-                        return !(Pattern.compile("\\d+\\.\\d+").matcher(s).matches() && Double.parseDouble(s) > 0);
-                    });
-                    tf.setOnKeyReleased((e) -> {
-                        if(!tf.isInvalid()){
-                            ((DoubleProperty) p).set(Double.parseDouble(tf.getText()));
-                        }
-                    });
-                }
-                else if(p instanceof StringProperty){
-                    tf.setValidateFunction((s) -> {
-                        return false;
-                    });
-                    tf.setOnKeyReleased((e) -> {
-                        if(!tf.isInvalid()){
-                            ((StringProperty) p).set(tf.getText());
-                        }
-                    });
-                }
-                ctrl = tf;
-            }
-            
-            Label optionLabel = new Label(p.getName(), ctrl);
-            optionLabel.setContentDisplay(ContentDisplay.BOTTOM);
-            optList.add(optionLabel);
         });
         return optList;
     }

@@ -263,7 +263,6 @@ public final class PolyRoom
         setCenterY(centerY);
         
         triggerListenerFlag = false;
-        
         setRadius((new Point2D(firstX, firstY)).distance(getCenterX(), getCenterY()));
         
         ControlPoint firstPoint = controlPoints.get(0);
@@ -449,6 +448,8 @@ public final class PolyRoom
     
     private ControlPoint initializeNewControlPoint(){
         ControlPoint newCP = new ControlPoint(this);
+        newCP.setCenterX(getCenterX());
+        newCP.setCenterY(getCenterY());
         newCP.centerXProperty().addListener((o, oV, nV)->{
             if(triggerListenerFlag){
                 if(isRegular()){
@@ -504,7 +505,20 @@ public final class PolyRoom
         });
         radiusProperty.addListener((o, oV, nV) -> {
             if(triggerListenerFlag){
-                //if(numSides)
+                Point2D vectorToFirstCP = 
+                    new Point2D(controlPoints.get(0).getCenterX() - getCenterX(), 
+                                controlPoints.get(0).getCenterY() - getCenterY())
+                        .normalize().multiply(nV.doubleValue());
+                triggerListenerFlag = false;
+                normalizeShape(vectorToFirstCP.getX() + getCenterX(), vectorToFirstCP.getY() + getCenterY());
+                triggerListenerFlag = true;
+            }
+        });
+        xProperty.addListener((o, oV, nV)->{
+            if(triggerListenerFlag){
+                triggerListenerFlag = false;
+                translate(nV.doubleValue()-oV.doubleValue(),0);
+                triggerListenerFlag = true;
             }
         });
     }
