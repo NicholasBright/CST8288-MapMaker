@@ -7,6 +7,7 @@ package mapmaker.mapelement;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.BooleanPropertyBase;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.css.PseudoClass;
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Circle;
@@ -20,20 +21,23 @@ public class ControlPoint extends Circle implements TranslatableElement, Selecta
     
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     
-    private final BooleanProperty selected = new BooleanPropertyBase(false) {
+    private final BooleanProperty selected = new SimpleBooleanProperty(false) {
         @Override
         public void invalidated() {
             pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, get());
         }
-        
-        @Override
-        public Object getBean() {
-            return ControlPoint.this;
-        }
 
         @Override
         public String getName() {
-            return "selected";
+            return "Selected";
+        }
+        
+        @Override
+        public void set(boolean val){
+            if(owner.isRegular() && owner.isSelected() != val)
+                owner.setSelected(val);
+            else
+                super.set(val);
         }
     };
     
