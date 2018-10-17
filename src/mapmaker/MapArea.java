@@ -39,8 +39,9 @@ public class MapArea extends Pane {
                         .forEach((r) -> {
                             if(super.getChildren().contains(r))
                                 super.getChildren().remove(r);
-                            if(!super.getChildren().contains(r.getControlPoints()))
+                            if(super.getChildren().contains(r.getControlPoints()))
                                 super.getChildren().remove(r.getControlPoints());
+                            
                         });
                 }
             }
@@ -51,7 +52,7 @@ public class MapArea extends Pane {
                 if(c.wasAdded()){
                     c.getAddedSubList()
                         .stream()
-                        .forEach((Node n) -> {
+                        .forEach((n) -> {
                             if(n instanceof PolyRoom)
                                 if(!rooms.contains((PolyRoom)n))
                                     add((PolyRoom)n);

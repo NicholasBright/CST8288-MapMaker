@@ -1,6 +1,5 @@
 package mapmaker.mapelement;
 
-import java.util.List;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -23,7 +22,7 @@ import mapmaker.MapArea;
 
 public final class PolyRoom
         extends Polygon
-        implements ModifiableProperties, TranslatableElement, SelectableElement {
+        implements ModifiableProperties, TranslatableElement, SelectableElement, RemovableElement {
     private boolean triggerListenerFlag = true;
     
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
@@ -102,7 +101,9 @@ public final class PolyRoom
         propertyList.addAll(nameProperty,
                 regularProperty,
                 numSidesProperty,
-                radiusProperty
+                radiusProperty,
+                xProperty,
+                yProperty
         );
         return propertyList;
     }
@@ -371,8 +372,8 @@ public final class PolyRoom
     
     public void removeControlPoint(ControlPoint cp){
         if(controlPoints.contains(cp)){
-            if(controlPoints.size() == 1)
-                ((MapArea)getParent()).getRooms().remove(this);
+            if(controlPoints.size() < 3)
+                ((MapArea)getParent()).remove(this);
             else {
                 controlPoints.remove(cp);
                 numSidesProperty().set(controlPoints.size());
@@ -384,10 +385,16 @@ public final class PolyRoom
     
     @Override
     public void translate(double xTrans, double yTrans){
+        triggerListenerFlag = false;
         double x = xTrans;
         double y = yTrans;
         setCenterX(getCenterX() + xTrans);
-        setCenterX(getCenterY() + yTrans);
+        setCenterY(getCenterY() + yTrans);
+        controlPoints.stream().forEach((cp)->{
+            cp.translate(xTrans, yTrans);
+        });
+        fixToPoints();
+        triggerListenerFlag = true;
     }
 
     @Override
@@ -444,18 +451,22 @@ public final class PolyRoom
         ControlPoint newCP = new ControlPoint(this);
         newCP.centerXProperty().addListener((o, oV, nV)->{
             if(triggerListenerFlag){
-                if(isRegular())
+                if(isRegular()){
+                    while(!controlPoints.get(0).equals(newCP))
+                        controlPoints.add(controlPoints.remove(0));
                     normalizeShape(Double.class.cast(nV), newCP.getCenterY());
-                else
-                    getPoints().set(controlPoints.indexOf(newCP), Double.class.cast(nV));
+                } else
+                    getPoints().set(controlPoints.indexOf(newCP)*2, Double.class.cast(nV));
             }
         });
         newCP.centerYProperty().addListener((o, oV, nV)->{
             if(triggerListenerFlag){
-                if(isRegular())
+                if(isRegular()){
+                    while(!controlPoints.get(0).equals(newCP))
+                        controlPoints.add(controlPoints.remove(0));
                     normalizeShape(newCP.getCenterX(), Double.class.cast(nV));
-                else
-                    getPoints().set(controlPoints.indexOf(newCP)+1, Double.class.cast(nV));
+                } else
+                    getPoints().set(controlPoints.indexOf(newCP)*2+1, Double.class.cast(nV));
             }
         });
         return newCP;
@@ -491,5 +502,17 @@ public final class PolyRoom
                 });
             }
         });
+        radiusProperty.addListener((o, oV, nV) -> {
+            if(triggerListenerFlag){
+                //if(numSides)
+            }
+        });
+    }
+    
+    @Override
+    public void remove(){
+        if(getParent() instanceof MapArea){
+            MapArea.class.cast(getParent()).remove(this);
+        }
     }
 }

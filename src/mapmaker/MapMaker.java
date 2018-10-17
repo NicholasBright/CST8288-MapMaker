@@ -415,7 +415,7 @@ public class MapMaker extends Application {
                 ValidatedTextField tf = new ValidatedTextField(p.getValue().toString());
                 if(p instanceof IntegerProperty){
                     tf.setValidateFunction((s) -> {
-                        return !(Pattern.compile("\\d+").matcher(s).matches() && Integer.parseInt(s) > 1);
+                        return !(Pattern.compile("\\d+").matcher(s).matches() && Integer.parseInt(s) > 0);
                     });
                     tf.setOnKeyReleased((e) -> {
                         if(!tf.isInvalid()){

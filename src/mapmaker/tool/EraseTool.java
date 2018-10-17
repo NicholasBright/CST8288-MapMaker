@@ -29,9 +29,6 @@ public class EraseTool extends Tool {
         if(e.getTarget() instanceof RemovableElement){
             ((RemovableElement)e.getTarget()).remove();
         }
-        else {
-            target.getChildren().remove(Node.class.cast(e.getTarget()));
-        }
     }
 
     @Override

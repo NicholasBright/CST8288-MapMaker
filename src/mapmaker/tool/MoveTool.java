@@ -2,17 +2,13 @@ package mapmaker.tool;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.input.MouseEvent;
 import mapmaker.MapArea;
-import mapmaker.mapelement.ControlPoint;
-import mapmaker.mapelement.Room;
 import mapmaker.mapelement.TranslatableElement;
 import mapmaker.mapelement.SelectableElement;
 
@@ -42,12 +38,6 @@ public class MoveTool extends Tool {
         return finalList;
     }
     
-    private Node addPointOrRoom(ControlPoint cp){
-        if(cp.getOwner().isRegular())
-            return cp.getOwner();
-        return cp;
-    }
-    
     @Override
     public void mousePressed(MouseEvent e) {
         lastPoint = new Point2D(e.getX(), e.getY());
@@ -55,29 +45,12 @@ public class MoveTool extends Tool {
         getSelectedChildren(target).stream()
             .filter((child)->(child instanceof TranslatableElement))
             .forEach((child)->{
-                if(child instanceof ControlPoint)
-                    toMoveSet.add((TranslatableElement) addPointOrRoom((ControlPoint)child));
-                else if(!toMoveSet.contains((TranslatableElement)child))
                     toMoveSet.add((TranslatableElement)child);
             });
         
-        Iterator<Node> iterN = target.getChildren().iterator();
-        while(iterN.hasNext() && toMoveSet.size() < 1){
-            Node n = iterN.next();
-            if(n instanceof TranslatableElement){
-                if(n instanceof Room){
-                    Iterator<ControlPoint> iterCP = ((Room)n).getControlPoints().iterator();
-                    while(iterCP.hasNext() && toMoveSet.size() < 1){
-                        ControlPoint cp = iterCP.next();
-                        if(cp.contains(lastPoint)){
-                            toMoveSet.add((TranslatableElement)addPointOrRoom(cp));
-                        }
-                    }
-                }
-                if(toMoveSet.size() < 1 && n.contains(lastPoint))
-                    toMoveSet.add((TranslatableElement)n);
-            }
-        }
+        if(toMoveSet.isEmpty() && e.getTarget() instanceof TranslatableElement)
+            toMoveSet.add(TranslatableElement.class.cast(e.getTarget()));
+        
         if(toMoveSet.size() > 0)
             target.getScene().setCursor(Cursor.MOVE);
     }
