@@ -29,8 +29,8 @@ public class MapArea extends Pane {
                         .forEach((r) -> {
                             if(!super.getChildren().contains(r))
                                 super.getChildren().add(r);
-                            if(!super.getChildren().containsAll(r.getControlPoints()))
-                                super.getChildren().addAll(r.getControlPoints());
+                            if(!super.getChildren().contains(r.getControlPoints()))
+                                super.getChildren().add(r.getControlPoints());
                         });
                 }
                 else if(c.wasRemoved()){
@@ -39,8 +39,8 @@ public class MapArea extends Pane {
                         .forEach((r) -> {
                             if(super.getChildren().contains(r))
                                 super.getChildren().remove(r);
-                            if(super.getChildren().containsAll(r.getControlPoints()))
-                                super.getChildren().removeAll(r.getControlPoints());
+                            if(!super.getChildren().contains(r.getControlPoints()))
+                                super.getChildren().remove(r.getControlPoints());
                         });
                 }
             }

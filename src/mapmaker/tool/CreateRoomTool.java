@@ -19,11 +19,10 @@ public final class CreateRoomTool extends Tool {
     
     @Override
     public void mousePressed(MouseEvent e) {
-        createdRoom = new PolyRoom();
-        createdRoom.setNumSides(Integer.class.cast(ToolState.getToolState().getOption(0)));
+        createdRoom = new PolyRoom(e.getX(), e.getY(), 0.0, Integer.class.cast(ToolState.getToolState().getOption(0)));
+        /*createdRoom.setNumSides(Integer.class.cast(ToolState.getToolState().getOption(0)));
         createdRoom.setCenterX(e.getX());
-        createdRoom.setCenterY(e.getY());
-        createdRoom.redraw();
+        createdRoom.setCenterY(e.getY());*/
         target.add(createdRoom);
     }
 

@@ -15,16 +15,20 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.Point2D;
+import javafx.scene.Group;
+import javafx.scene.Parent;
 import javafx.scene.shape.Polygon;
 import javafx.scene.transform.Rotate;
 import mapmaker.MapArea;
 
 public final class PolyRoom
         extends Polygon
-        implements ModifiableProperties, TranslatableElement, SelectableElement, RemovableElement {
+        implements ModifiableProperties, TranslatableElement, SelectableElement {
     private boolean triggerListenerFlag = true;
     
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
+    
+    private Group controlPointGroup = new Group(){};
     
     private ObservableList<ControlPoint> controlPoints = FXCollections.observableArrayList();
     
@@ -51,7 +55,7 @@ public final class PolyRoom
             }
             else if(!customNameFlag) {
                 String newVal;
-                switch(controlPoints.size()){
+                switch(getNumSides()){
                     case 1:
                         newVal = "Point";
                         break;
@@ -138,7 +142,7 @@ public final class PolyRoom
     };
     
     public PolyRoom(){
-        this(-1.0, -1.0);
+        this(0.0, 0.0);
     }
     
     public PolyRoom(double centerX, double centerY){
@@ -150,17 +154,24 @@ public final class PolyRoom
     }
     
     public PolyRoom(double centerX, double centerY, double radius, int numSides){
+        triggerListenerFlag = false;
+        
+        initializeListeners();
+        
         xProperty.set(centerX);
         yProperty.set(centerY);
         radiusProperty.set(radius);
         numSidesProperty.set(numSides);
-        redraw();
-        getPoints().addListener((ListChangeListener.Change<? extends Double> c)->{
-        });
+        
+        for(int i=0;i<numSides;i++){
+            controlPoints.add(initializeNewControlPoint());
+        }
+        
         getStyleClass().add("room");
+        triggerListenerFlag = true;
     }
     
-    public void redraw(){
+    /*public void redraw(){
         redraw(getCenterX(), getCenterY(), getCenterX(), getCenterY() + getRadius());
     }
     
@@ -229,11 +240,26 @@ public final class PolyRoom
         
         fixToPoints();
         nameProperty().set(null);
+    }*/
+    
+    public void normalizeShape(){
+        triggerListenerFlag = false;
+        normalizeShape(controlPoints.get(0).getCenterX(), controlPoints.get(0).getCenterY());
+        triggerListenerFlag = true;
     }
     
     public void normalizeShape(double firstX, double firstY){
+        triggerListenerFlag = false;
+        normalizeShape(getCenterX(), getCenterY(), firstX, firstY);
+        triggerListenerFlag = true;
+    }
+    
+    public void normalizeShape(double centerX, double centerY, double firstX, double firstY){
         if(getNumSides() < 1)
             return;
+        
+        setCenterX(centerX);
+        setCenterY(centerY);
         
         triggerListenerFlag = false;
         
@@ -260,8 +286,12 @@ public final class PolyRoom
         triggerListenerFlag = true;
     }
     
-    public List<ControlPoint> getControlPoints(){
+    public ObservableList<ControlPoint> getControlPointList(){
         return controlPoints;
+    }
+    
+    public Parent getControlPoints(){
+        return controlPointGroup;
     }
     
     public int getNumSides(){
@@ -323,13 +353,20 @@ public final class PolyRoom
             });
     }
     
-    public void addControlPoint(ControlPoint cp) {
-        if(!controlPoints.contains(cp)){
-            controlPoints.add(cp);
-            getPoints().addAll(cp.getCenterX(), cp.getCenterY());
-            numSidesProperty().set(controlPoints.size()-1);
+    public void addControlPoint(double x, double y) {
+        triggerListenerFlag = false;
+        ControlPoint cp = initializeNewControlPoint();
+        cp.setCenterX(x);
+        cp.setCenterY(y);
+        controlPoints.add(cp);
+        if(isRegular()){
+            normalizeShape();
+        } else {
+            getPoints().addAll(cp.getCenterX(), cp.getCenterY()); 
         }
+        numSidesProperty().set(controlPoints.size()-1);
         nameProperty().set(null);
+        triggerListenerFlag = true;
     }
     
     public void removeControlPoint(ControlPoint cp){
@@ -339,6 +376,7 @@ public final class PolyRoom
             else {
                 controlPoints.remove(cp);
                 numSidesProperty().set(controlPoints.size());
+                normalizeShape();
             }
         }
         nameProperty().set(null);
@@ -350,11 +388,6 @@ public final class PolyRoom
         double y = yTrans;
         setCenterX(getCenterX() + xTrans);
         setCenterX(getCenterY() + yTrans);
-    }
-    
-    @Override
-    public void remove() {
-        
     }
 
     @Override
@@ -405,5 +438,58 @@ public final class PolyRoom
                 ", centerY: " + yProperty.get() +
                 ", radius: " + radiusProperty.get()
                 + ", numSides: " + numSidesProperty.get() + "]";
+    }
+    
+    private ControlPoint initializeNewControlPoint(){
+        ControlPoint newCP = new ControlPoint(this);
+        newCP.centerXProperty().addListener((o, oV, nV)->{
+            if(triggerListenerFlag){
+                if(isRegular())
+                    normalizeShape(Double.class.cast(nV), newCP.getCenterY());
+                else
+                    getPoints().set(controlPoints.indexOf(newCP), Double.class.cast(nV));
+            }
+        });
+        newCP.centerYProperty().addListener((o, oV, nV)->{
+            if(triggerListenerFlag){
+                if(isRegular())
+                    normalizeShape(newCP.getCenterX(), Double.class.cast(nV));
+                else
+                    getPoints().set(controlPoints.indexOf(newCP)+1, Double.class.cast(nV));
+            }
+        });
+        return newCP;
+    }
+    
+    private void initializeListeners(){
+        numSidesProperty.addListener((o, oV, nV)->{
+            nameProperty.set(null);
+            if(triggerListenerFlag){
+                if(nV.intValue() > controlPoints.size()){
+                    int i = nV.intValue() - controlPoints.size();
+                    while(i-- > 0){
+                        controlPoints.add(initializeNewControlPoint());
+                    }
+                    normalizeShape();
+                }
+                else if(nV.intValue() < controlPoints.size()){
+                    int i = controlPoints.size() - nV.intValue();
+                    while(i-- > 0){
+                        controlPoints.remove(controlPoints.size()-1);
+                    }
+                    normalizeShape();
+                }
+            }
+        });
+        controlPoints.addListener((ListChangeListener.Change<? extends ControlPoint> c)->{
+            while(c.next()){
+                c.getAddedSubList().stream().forEach((cp)->{
+                    controlPointGroup.getChildren().add(cp);
+                });
+                c.getRemoved().stream().forEach((cp)->{
+                    controlPointGroup.getChildren().remove(cp);
+                });
+            }
+        });
     }
 }

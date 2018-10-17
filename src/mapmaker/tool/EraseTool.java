@@ -5,6 +5,7 @@
  */
 package mapmaker.tool;
 
+import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import mapmaker.MapArea;
 import mapmaker.mapelement.RemovableElement;
@@ -27,6 +28,9 @@ public class EraseTool extends Tool {
     public void mouseClicked(MouseEvent e) {
         if(e.getTarget() instanceof RemovableElement){
             ((RemovableElement)e.getTarget()).remove();
+        }
+        else {
+            target.getChildren().remove(Node.class.cast(e.getTarget()));
         }
     }
 
