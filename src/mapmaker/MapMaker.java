@@ -44,7 +44,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import mapmaker.mapelement.PolyRoom;
+import mapmaker.mapelement.Room;
 import mapmaker.tool.CreateRoomTool;
 import mapmaker.tool.DoorTool;
 import mapmaker.tool.EraseTool;
@@ -294,7 +294,7 @@ public class MapMaker extends Application {
             
             Label label = roomListView.getSelectionModel().getSelectedItem();
             if(label != null){
-                PolyRoom room = ((PolyRoom) label.getUserData());
+                Room room = ((Room) label.getUserData());
                 room.setSelected(true);
             }
         });
@@ -303,11 +303,11 @@ public class MapMaker extends Application {
             optionsList.getItems().clear();
             if(nV != null){
                 //nV.setStyle("-fx-underline: true; ");
-                optionsList.setItems(buildOptionList(((PolyRoom)nV.getUserData()).getModifiablePropertiesList()));
+                optionsList.setItems(buildOptionList(((Room)nV.getUserData()).getModifiablePropertiesList()));
             }
         });
         
-        mapArea.getRooms().addListener((ListChangeListener.Change<? extends PolyRoom> c) -> {
+        mapArea.getRooms().addListener((ListChangeListener.Change<? extends Room> c) -> {
             while(c.next()){
                 c.getAddedSubList()
                  .stream()
@@ -402,12 +402,15 @@ public class MapMaker extends Application {
     
     public ObservableList<Label> buildOptionList(ObservableList<Property> propList){
         ObservableList<Label> optList = FXCollections.observableArrayList();
-        propList.stream().forEach(new Consumer<Property>() {
-            @Override
-            public void accept(Property p) {
+        propList.stream().forEach((Property p) -> {
                 Control ctrl;
                 if(p instanceof BooleanProperty){
                     ComboBox<String> boolCB = new ComboBox<>();
+                    BooleanProperty.class.cast(p).addListener((o, oV, nV) -> {
+                        if(! nV.toString().equals(boolCB.getValue().toLowerCase())){
+                            boolCB.valueProperty().set(nV ? "True" : "False");
+                        }
+                    });
                     boolCB.getItems().addAll("True", "False");
                     boolCB.valueProperty().set(((BooleanProperty) p).getValue() ? "True" : "False");
                     boolCB.valueProperty().addListener((o, oV, nV) -> {
@@ -420,7 +423,8 @@ public class MapMaker extends Application {
                     if(p instanceof IntegerProperty){
                         tf = new ValidatedTextField(p.getValue().toString());
                         IntegerProperty.class.cast(p).addListener((o, oV, nV)->{
-                            tf.setText(p.getValue().toString());
+                            if(! nV.toString().equals(tf.getText()))
+                                tf.setText(p.getValue().toString());
                         });
                         tf.setValidateFunction((s) -> {
                             return !(Pattern.compile("\\d+").matcher(s).matches() && Integer.parseInt(s) > 0);
@@ -430,26 +434,30 @@ public class MapMaker extends Application {
                                 ((IntegerProperty) p).set(Integer.parseInt(tf.getText()));
                             }
                         });
+                        tf.setInvalidTooltipText("Please enter a correct integer (no decimals or others)");
                     }
                     else if(p instanceof DoubleProperty){
-                        DecimalFormat df = new DecimalFormat("#.00");
+                        DecimalFormat df = new DecimalFormat("#.0");
                         tf = new ValidatedTextField(df.format(p.getValue()));
                         DoubleProperty.class.cast(p).addListener((o, oV, nV)->{
-                            tf.setText(df.format(nV));
+                            if(! df.format(nV).equals(tf.getText()))
+                                tf.setText(df.format(nV));
                         });
                         tf.setValidateFunction((s) -> {
-                            return !(Pattern.compile("\\d+\\.\\d+").matcher(s).matches() && Double.parseDouble(s) > 0);
+                            return !(Pattern.compile("\\d+\\.\\d").matcher(s).matches() && Double.parseDouble(s) > 0);
                         });
                         tf.setOnKeyReleased((e) -> {
                             if(!tf.isInvalid()){
                                 ((DoubleProperty) p).set(Double.parseDouble(tf.getText()));
                             }
                         });
+                        tf.setInvalidTooltipText("Please ensure to use a period and exactly 1 decimal place");
                     }
                     else if(p instanceof StringProperty){
                         tf = new ValidatedTextField(p.getValue().toString());
                         StringProperty.class.cast(p).addListener((o, oV, nV)->{
-                            tf.setText(p.getValue().toString());
+                            if(! nV.equals(tf.getText()))
+                                tf.setText(p.getValue().toString());
                         });
                         tf.setValidateFunction((s) -> {
                             return false;
@@ -471,7 +479,6 @@ public class MapMaker extends Application {
                 Label optionLabel = new Label(p.getName(), ctrl);
                 optionLabel.setContentDisplay(ContentDisplay.BOTTOM);
                 optList.add(optionLabel);
-            }
         });
         return optList;
     }

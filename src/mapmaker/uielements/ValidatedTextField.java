@@ -49,7 +49,7 @@ public class ValidatedTextField extends TextField {
     
     public ValidatedTextField(String text, Function<String,Boolean> validateFunction){
         super(text);
-        Tooltip tp = new Tooltip("Invalid Input");
+        tp = new Tooltip("Invalid Input");
         setValidateFunction(validateFunction);
         textProperty().addListener((o, oV, nV) -> {
             if(this.validateFunction != null)

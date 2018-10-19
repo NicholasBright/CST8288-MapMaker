@@ -1,6 +1,5 @@
 package mapmaker.mapelement;
 
-import java.util.List;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -11,31 +10,74 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
-import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
+import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.shape.Polygon;
 import javafx.scene.transform.Rotate;
 import mapmaker.MapArea;
 
 public final class Room
-        extends Parent
-        implements ModifiableProperties, TranslatableElement {
-    private boolean triggerListenerFlag = true;
+        extends Polygon
+        implements SelectableElement, TranslatableElement, RemovableElement, ModifiableProperties {
     
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     
+    private boolean triggerListenerFlag = true;
+    private Group controlPointGroup = new Group(){};
     private ObservableList<ControlPoint> controlPoints = FXCollections.observableArrayList();
-    private RoomShape internalShape = new RoomShape();
     
-    private final DoubleProperty sideLengthProperty = new SimpleDoubleProperty(-1){
+    private final DoubleProperty radiusProperty = new SimpleDoubleProperty(0.0){
         @Override
         public String getName(){
-            return "Side length";
+            return "Radius";
         }
     };
+    
+    private final DoubleProperty centerXProperty = new SimpleDoubleProperty(){
+        @Override
+        public String getName(){
+            return "X";
+        }
+        
+        @Override
+        public void set(double value){
+            if(triggerListenerFlag){
+                translate(value - get(),0);
+            }
+            else {
+                super.set(value);
+            }
+        }
+    };
+    
+    private final DoubleProperty centerYProperty = new SimpleDoubleProperty(){
+        @Override
+        public String getName(){
+            return "Y";
+        }
+        
+        @Override
+        public void set(double value){
+            if(triggerListenerFlag){
+                translate(0, value - get());
+            }
+            else {
+                super.set(value);
+            }
+        }
+    };
+    
+    private final IntegerProperty numSidesProperty = new SimpleIntegerProperty(){
+        @Override
+        public String getName(){
+            return "Number of Sides";
+        }
+    };
+    
     private final StringProperty nameProperty = new SimpleStringProperty(null){
         @Override
         public String getName(){
@@ -51,255 +93,275 @@ public final class Room
                 customNameFlag = true;
             }
             else if(!customNameFlag) {
-                String newVal;
-                switch(controlPoints.size()){
-                    case 1:
-                        newVal = "Point";
-                        break;
-                    case 2:
-                        newVal = "Line";
-                        break;
-                    case 3: 
-                        newVal = "Triangle";
-                        break;
-                    case 4:
-                        newVal = "Rectangle";
-                        break;
-                    case 5:
-                        newVal = "Pentagon";
-                        break;
-                    case 6:
-                        newVal = "Hexagon";
-                        break;
-                    default:
-                        newVal = "Polygon";
-                }
-                super.set(newVal);
+                String[] names = {
+                    "Point",
+                    "Line",
+                    "Triangle",
+                    "Rectangle",
+                    "Pentagon",
+                    "Hexagon",
+                    "Polygon",
+                };
+                super.set(names[Math.min(getNumSides(), names.length) - 1]);
             }
         }
     };
+    
     private final BooleanProperty regularProperty = new SimpleBooleanProperty(true){
         @Override
         public String getName(){
             return "Regular";
         }
     };
-    private final IntegerProperty numSidesProperty = new SimpleIntegerProperty(){
+    
+    private final BooleanProperty selectedProperty = new SimpleBooleanProperty(false) {
         @Override
-        public String getName(){
-            return "Number of Sides";
+        public void invalidated() {
+            pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, get());
+        }
+
+        @Override
+        public String getName() {
+            return "Selected";
+        }
+
+        @Override
+        public void set(boolean b){
+            super.set(b);
+            controlPoints.stream().forEach((cp) -> {
+                cp.setSelected(b);
+            });
         }
     };
-
-    @Override
-    public ObservableList<Property> getModifiablePropertiesList() {
-        ObservableList<Property> propertyList = FXCollections.observableArrayList();
-        propertyList.addAll(nameProperty,
-                regularProperty,
-                numSidesProperty,
-                sideLengthProperty
-        );
-        return propertyList;
-    }
-    
-    private class RoomShape extends Polygon implements RemovableElement, SelectableElement{
-        
-        private final BooleanProperty selectedProperty = new SimpleBooleanProperty(false) {
-            @Override
-            public void invalidated() {
-                pseudoClassStateChanged(SELECTED_PSEUDO_CLASS, get());
-            }
-
-            @Override
-            public String getName() {
-                return "Selected";
-            }
-            
-            @Override
-            public void set(boolean b){
-                super.set(b);
-                controlPoints.stream().forEach((cp) -> {
-                    cp.setSelected(b);
-                });
-            }
-        };
-        
-        public RoomShape(){
-            super();
-            getStyleClass().add("room");
-        }
-    
-        @Override
-        public void remove(){
-            ((MapArea)(Room.this.getParent())).getRooms().remove(Room.this);
-        }
-    
-        @Override
-        public boolean isSelected(){
-                return this.selectedProperty.get();
-            }
-
-        @Override
-        public void setSelected(boolean selected){
-            this.selectedProperty.set(selected);
-        }
-        
-        @Override
-        public void toFront(){
-            Room.this.toFront();
-        }
-    }
     
     public Room(){
-        numSidesProperty().set(0);
-        numSidesProperty().addListener((o, oV, nV) -> {
+        this(0.0, 0.0);
+    }
+    
+    public Room(double centerX, double centerY){
+        this(centerX, centerY, 0.0);
+    }
+    
+    public Room(double centerX, double centerY, double radius){
+        this(centerX, centerY, radius, 0);
+    }
+    
+    public Room(double centerX, double centerY, double radius, int numSides){
+        triggerListenerFlag = false;
+        
+        initializeListeners();
+        
+        centerXProperty.set(centerX);
+        centerYProperty.set(centerY);
+        radiusProperty.set(radius);
+        numSidesProperty.set(numSides);
+        
+        for(int i=0;i<numSides;i++){
+            controlPoints.add(initializeNewControlPoint());
+        }
+        
+        getStyleClass().add("room");
+        triggerListenerFlag = true;
+    }
+    
+    private void initializeListeners(){
+        numSidesProperty.addListener((o, oV, nV)->{
+            nameProperty.set(null);
             if(triggerListenerFlag){
-                if((Integer)nV>1 && isRegular())
-                    if((Integer)oV == 1)
-                        setShape((Integer)nV, getSideLength(), controlPoints.get(0).getCenter());
-                    else
-                        setShape((Integer)nV, controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
-                else
-                    fixToPoints();
-            }
-        });
-        regularProperty().addListener((o, oV, nV)->{
-            if(triggerListenerFlag){
-                if(controlPoints.size()>1)
-                    setShape(numSidesProperty().get(), controlPoints.get(0).getCenter(), controlPoints.get(1).getCenter());
-            }
-        });
-        sideLengthProperty().addListener((o, oV, nV)->{
-            if(triggerListenerFlag){
-                if(controlPoints.size()>1){
-                    Point2D vectorToEnd = new Point2D(
-                            controlPoints.get(1).getCenterX() - controlPoints.get(0).getCenterX(),
-                            controlPoints.get(1).getCenterY() - controlPoints.get(0).getCenterY());
-                    vectorToEnd = vectorToEnd.normalize().multiply((Double)nV);
-                    Point2D newEnd = new Point2D(controlPoints.get(0).getCenterX()+vectorToEnd.getX(),controlPoints.get(0).getCenterY()+vectorToEnd.getY());
-                    setShape(numSidesProperty().get(), controlPoints.get(0).getCenter(), newEnd);
+                if(nV.intValue() > controlPoints.size()){
+                    int i = nV.intValue() - controlPoints.size();
+                    while(i-- > 0){
+                        controlPoints.add(initializeNewControlPoint());
+                    }
+                    normalizeShape();
+                }
+                else if(nV.intValue() < controlPoints.size()){
+                    int i = controlPoints.size() - nV.intValue();
+                    while(i-- > 0){
+                        controlPoints.remove(controlPoints.size()-1);
+                    }
+                    normalizeShape();
                 }
             }
         });
-    }
-    
-    public Room(Point2D startPoint){
-        this(startPoint.getX(), startPoint.getY());
-    }
-    
-    public Room(double x, double y){
-        this(0, 0, x, y);
-    }
-    
-    public Room(int numSides, double sideLength, double startX, double startY){
-        this(numSides, new Point2D(startX, startY), null);
-    }
-    
-    public Room(int numSides, double sideLength, Point2D startPoint){
-        this(numSides, startPoint, new Point2D(startPoint.getX()+sideLength,startPoint.getY()));
-    }
-    
-    public Room(int numSides, Point2D startPoint, Point2D endPoint){
-        this();
-        setShape(numSides, startPoint, endPoint);
-    }
-    
-    public final void setShape(Point2D startPoint, Point2D endPoint) throws IllegalArgumentException{
-        setShape(getNumSides(), startPoint, endPoint);
-    }
-    
-    public final void setShape(int numSides, double sideLength, Point2D startPoint) throws IllegalArgumentException{
-        setShape(numSides, startPoint, new Point2D(startPoint.getX()+sideLength, startPoint.getY()));
-    }
-    
-    public final void setShape(int numSides, Point2D startPoint, Point2D endPoint) throws IllegalArgumentException{
-        if(numSides < 0)
-            throw new IllegalArgumentException("numSides cannot be less than 0");
-        if(startPoint == null)
-            throw new IllegalArgumentException("startPoint cannot be null");
-        
-        getChildren().clear();
-        controlPoints.clear();
-        
-        controlPoints.add(new ControlPoint(null, startPoint));
-        if(endPoint != null){
-            triggerListenerFlag = false;
-            numSidesProperty().set(numSides);
-            sideLengthProperty.set(startPoint.distance(endPoint));
-            triggerListenerFlag = true;
-            
-            controlPoints.add(new ControlPoint(null, endPoint));
-
-            Point2D beforeLast = startPoint;
-            Point2D last = endPoint;
-            Rotate angleBetweenPoints = new Rotate(((numSides-2)*-180)/numSides);
-            for(int i=2;i<numSides;i++){
-                Point2D newVector = angleBetweenPoints.deltaTransform(beforeLast.getX() - last.getX(),
-                        beforeLast.getY() - last.getY());
-                beforeLast = last;
-                last = new Point2D(newVector.getX() + last.getX(), newVector.getY() + last.getY());
-                controlPoints.add(new ControlPoint(null, last.getX(), last.getY()));
+        controlPoints.addListener((ListChangeListener.Change<? extends ControlPoint> c)->{
+            while(c.next()){
+                c.getAddedSubList().stream().forEach((cp)->{
+                    controlPointGroup.getChildren().add(cp);
+                });
+                c.getRemoved().stream().forEach((cp)->{
+                    controlPointGroup.getChildren().remove(cp);
+                });
             }
-        }
-        
-        controlPoints.forEach(cp -> cp.setSelected(selectedProperty().get()));
-        
-        fixToPoints();
-        getChildren().add(internalShape);
-        getChildren().addAll(controlPoints);
-        nameProperty().set(null);
+        });
+        radiusProperty.addListener((o, oV, nV) -> {
+            if(triggerListenerFlag){
+                Point2D vectorToFirstCP = 
+                    new Point2D(controlPoints.get(0).getCenterX() - getCenterX(), 
+                                controlPoints.get(0).getCenterY() - getCenterY())
+                        .normalize().multiply(nV.doubleValue());
+                triggerListenerFlag = false;
+                normalizeShape(vectorToFirstCP.getX() + getCenterX(), vectorToFirstCP.getY() + getCenterY());
+                triggerListenerFlag = true;
+            }
+        });
+    }
+    
+    private ControlPoint initializeNewControlPoint(){
+        ControlPoint newCP = new ControlPoint(this);
+        newCP.setCenterX(getCenterX());
+        newCP.setCenterY(getCenterY());
+        newCP.centerXProperty().addListener((o, oV, nV)->{
+            if(triggerListenerFlag){
+                if(isRegular()){
+                    while(!controlPoints.get(0).equals(newCP))
+                        controlPoints.add(controlPoints.remove(0));
+                    normalizeShape(Double.class.cast(nV), newCP.getCenterY());
+                } else
+                    getPoints().set(controlPoints.indexOf(newCP)*2, Double.class.cast(nV));
+            }
+        });
+        newCP.centerYProperty().addListener((o, oV, nV)->{
+            if(triggerListenerFlag){
+                if(isRegular()){
+                    while(!controlPoints.get(0).equals(newCP))
+                        controlPoints.add(controlPoints.remove(0));
+                    normalizeShape(newCP.getCenterX(), Double.class.cast(nV));
+                } else
+                    getPoints().set(controlPoints.indexOf(newCP)*2+1, Double.class.cast(nV));
+            }
+        });
+        newCP.setSelected(isSelected());
+        return newCP;
     }
     
     public void normalizeShape(){
-        setShape(getNumSides(),
-                new Point2D(internalShape.getPoints().get(0),
-                            internalShape.getPoints().get(1)),
-                new Point2D(internalShape.getPoints().get(2),
-                            internalShape.getPoints().get(3)));
+        triggerListenerFlag = false;
+        normalizeShape(controlPoints.get(0).getCenterX(), controlPoints.get(0).getCenterY());
+        triggerListenerFlag = true;
     }
     
-    public List<ControlPoint> getControlPoints(){
+    public void normalizeShape(double firstX, double firstY){
+        triggerListenerFlag = false;
+        normalizeShape(getCenterX(), getCenterY(), firstX, firstY);
+        triggerListenerFlag = true;
+    }
+    
+    public void normalizeShape(double centerX, double centerY, double firstX, double firstY){
+        if(getNumSides() < 1)
+            return;
+        
+        setCenterX(centerX);
+        setCenterY(centerY);
+        
+        triggerListenerFlag = false;
+        setRadius((new Point2D(firstX, firstY)).distance(getCenterX(), getCenterY()));
+        
+        ControlPoint firstPoint = controlPoints.get(0);
+        firstPoint.setCenterX(firstX);
+        firstPoint.setCenterY(firstY);
+        
+        Rotate angleBetweenPoints = new Rotate(180 - (getNumSides()-2)*-180/getNumSides());
+        Point2D lastVector = angleBetweenPoints.deltaTransform(firstX - getCenterX(), firstY - getCenterY());
+        for(int i=1;i<getNumSides();i++){
+            double x = lastVector.getX() + getCenterX();
+            double y = lastVector.getY() + getCenterY();
+            
+            ControlPoint currPoint = controlPoints.get(i);
+            currPoint.setCenterX(x);
+            currPoint.setCenterY(y);
+            
+            lastVector = angleBetweenPoints.deltaTransform(lastVector.getX(), lastVector.getY());
+        }
+        
+        fixToPoints();
+        triggerListenerFlag = true;
+    }
+    
+    public void fixToPoints() {
+        getPoints().clear();
+        controlPoints
+            .stream()
+            .forEach( (cp) -> {
+                getPoints().addAll(cp.getCenterX(), cp.getCenterY());
+            });
+    }
+    
+    public void addControlPoint(double x, double y) {
+        triggerListenerFlag = false;
+        ControlPoint cp = initializeNewControlPoint();
+        cp.setCenterX(x);
+        cp.setCenterY(y);
+        controlPoints.add(cp);
+        if(isRegular()){
+            normalizeShape();
+        } else {
+            getPoints().addAll(cp.getCenterX(), cp.getCenterY()); 
+        }
+        numSidesProperty().set(controlPoints.size()-1);
+        nameProperty().set(null);
+        triggerListenerFlag = true;
+    }
+    
+    public void removeControlPoint(ControlPoint cp){
+        if(controlPoints.contains(cp)){
+            if(controlPoints.size() < 3)
+                ((MapArea)getParent()).remove(this);
+            else {
+                controlPoints.remove(cp);
+                numSidesProperty().set(controlPoints.size());
+                normalizeShape();
+            }
+        }
+        nameProperty().set(null);
+    }
+    
+    public ObservableList<ControlPoint> getControlPointList(){
         return controlPoints;
+    }
+    
+    public Parent getControlPoints(){
+        return controlPointGroup;
+    }
+    
+    public double getRadius(){
+        return radiusProperty.get();
+    }
+    
+    public void setRadius(Double radius){
+        radiusProperty.set(radius);
+    }
+    
+    public DoubleProperty radiusProperty(){
+        return radiusProperty;
+    }
+    
+    public double getCenterX(){
+        return centerXProperty.get();
+    }
+    
+    public void setCenterX(double x){
+        centerXProperty.set(x);
+    }
+    
+    public DoubleProperty centerXProperty(){
+        return centerXProperty;
+    }
+    
+    public double getCenterY(){
+        return centerYProperty.get();
+    }
+    
+    public void setCenterY(double y){
+        centerYProperty.set(y);
+    }
+    
+    public DoubleProperty centerYProperty(){
+        return centerYProperty;
     }
     
     public int getNumSides(){
         return numSidesProperty.get();
-    }
-    
-    public double getSideLength(){
-        return sideLengthProperty.get();
-    }
-    
-    public void setSideLength(double sideLength){
-        sideLengthProperty().set(sideLength);
-    }
-    
-    public DoubleProperty sideLengthProperty(){
-        return sideLengthProperty;
-    }
-    
-    public boolean isSelected(){
-        return selectedProperty().get();
-    }
-    
-    public void setSelected(boolean selected){
-        selectedProperty().set(selected);
-    }
-    
-    public BooleanProperty selectedProperty(){
-        return internalShape.selectedProperty;
-    }
-    
-    public boolean isRegular(){
-        return regularProperty.get();
-    }
-    
-    public void setRegular(boolean regular){
-        this.regularProperty.set(regular);
-    }
-    
-    public BooleanProperty regularProperty(){
-        return regularProperty;
     }
     
     public void setNumSides(int numSides){
@@ -322,57 +384,77 @@ public final class Room
         return this.nameProperty;
     }
     
-    public void fixToPoints() {
-        internalShape.getPoints().clear();
-        controlPoints
-            .stream()
-            .forEach( (cp) -> {
-                internalShape.getPoints().addAll(cp.getCenterX(), cp.getCenterY());
-            });
+    public boolean isRegular(){
+        return regularProperty.get();
     }
     
-    public void addControlPoint(ControlPoint cp) {
-        if(!getChildren().contains(cp))
-            getChildren().add(cp);
-        if(!controlPoints.contains(cp)){
-            controlPoints.add(cp);
-            internalShape.getPoints().addAll(cp.getCenterX(), cp.getCenterY());
-            this.getChildren().remove(internalShape);
-            this.getChildren().add(0,internalShape);
-            numSidesProperty().set(controlPoints.size()-1);
-        }
-        nameProperty().set(null);
+    public void setRegular(boolean regular){
+        this.regularProperty.set(regular);
     }
     
-    public void removeControlPoint(ControlPoint cp){
-        if(getChildren().contains(cp)){
-            getChildren().remove(cp);
-        }
-        if(controlPoints.contains(cp)){
-            if(controlPoints.size() == 1)
-                ((MapArea)getParent()).getRooms().remove(this);
-            else {
-                controlPoints.remove(cp);
-                numSidesProperty().set(controlPoints.size());
-            }
-        }
-        nameProperty().set(null);
+    public BooleanProperty regularProperty(){
+        return regularProperty;
+    }
+    
+    public BooleanProperty selectedProperty(){
+        return selectedProperty;
+    }
+    
+    @Override
+    public String toString(){
+        return "Room[centerX:" + centerXProperty.get() +
+                ", centerY: " + centerYProperty.get() +
+                ", radius: " + radiusProperty.get()
+                + ", numSides: " + numSidesProperty.get() + "]";
+    }
+
+    @Override
+    public void toFront(){
+        super.toFront();
+        controlPoints.stream().forEach((cp)->{cp.toFront();});
+    }
+    
+    @Override
+    public boolean isSelected(){
+        return selectedProperty().get();
+    }
+    
+    @Override
+    public void setSelected(boolean selected){
+        selectedProperty().set(selected);
     }
     
     @Override
     public void translate(double xTrans, double yTrans){
-        Bounds bounds = getBoundsInParent();
-        
-        if(bounds.getMinX()+xTrans < 0)
-            xTrans = bounds.getMinX() * -1;
-        
-        if(bounds.getMinY()+yTrans < 0)
-            yTrans = bounds.getMinY() * -1;
-        
+        triggerListenerFlag = false;
         double x = xTrans;
         double y = yTrans;
-        controlPoints.stream().forEach((cp) -> {
-            cp.translate(x, y);
+        setCenterX(getCenterX() + xTrans);
+        setCenterY(getCenterY() + yTrans);
+        controlPoints.stream().forEach((cp)->{
+            cp.translate(xTrans, yTrans);
         });
+        fixToPoints();
+        triggerListenerFlag = true;
+    }
+    
+    @Override
+    public void remove(){
+        if(getParent() instanceof MapArea){
+            MapArea.class.cast(getParent()).remove(this);
+        }
+    }
+
+    @Override
+    public ObservableList<Property> getModifiablePropertiesList() {
+        ObservableList<Property> propertyList = FXCollections.observableArrayList();
+        propertyList.addAll(nameProperty,
+                regularProperty,
+                numSidesProperty,
+                radiusProperty,
+                centerXProperty,
+                centerYProperty
+        );
+        return propertyList;
     }
 }

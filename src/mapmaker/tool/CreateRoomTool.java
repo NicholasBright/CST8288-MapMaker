@@ -3,7 +3,7 @@ package mapmaker.tool;
 import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
 import mapmaker.MapArea;
-import mapmaker.mapelement.PolyRoom;
+import mapmaker.mapelement.Room;
 
 /**
  *
@@ -11,7 +11,7 @@ import mapmaker.mapelement.PolyRoom;
  */
 public final class CreateRoomTool extends Tool {
     Point2D startPoint;
-    PolyRoom createdRoom;
+    Room createdRoom;
     
     public CreateRoomTool (MapArea target){
         super("Room Tool", "Creates rooms", target);
@@ -19,7 +19,7 @@ public final class CreateRoomTool extends Tool {
     
     @Override
     public void mousePressed(MouseEvent e) {
-        createdRoom = new PolyRoom(e.getX(), e.getY(), 0.0, Integer.class.cast(ToolState.getToolState().getOption(0)));
+        createdRoom = new Room(e.getX(), e.getY(), 0.0, Integer.class.cast(ToolState.getToolState().getOption(0)));
         /*createdRoom.setNumSides(Integer.class.cast(ToolState.getToolState().getOption(0)));
         createdRoom.setCenterX(e.getX());
         createdRoom.setCenterY(e.getY());*/

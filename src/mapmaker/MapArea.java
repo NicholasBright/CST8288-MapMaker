@@ -7,11 +7,11 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-import mapmaker.mapelement.PolyRoom;
+import mapmaker.mapelement.Room;
 import mapmaker.tool.ToolState;
 
 public class MapArea extends Pane {
-    private final ObservableList<PolyRoom> rooms = FXCollections.observableArrayList();
+    private final ObservableList<Room> rooms = FXCollections.observableArrayList();
     
     public MapArea(){
         super();
@@ -21,7 +21,7 @@ public class MapArea extends Pane {
             ToolState.getToolState().getActiveTool().handleMouseEvent(e);
         });
         
-        rooms.addListener((ListChangeListener.Change<? extends PolyRoom> c) -> {
+        rooms.addListener((ListChangeListener.Change<? extends Room> c) -> {
             while(c.next()){
                 if(c.wasAdded()){
                     c.getAddedSubList()
@@ -53,18 +53,18 @@ public class MapArea extends Pane {
                     c.getAddedSubList()
                         .stream()
                         .forEach((n) -> {
-                            if(n instanceof PolyRoom)
-                                if(!rooms.contains((PolyRoom)n))
-                                    add((PolyRoom)n);
+                            if(n instanceof Room)
+                                if(!rooms.contains((Room)n))
+                                    add((Room)n);
                         });
                 }
                 else if(c.wasRemoved()){
                     c.getRemoved()
                         .stream()
                         .forEach((n) -> {
-                            if(n instanceof PolyRoom)
-                                if(rooms.contains((PolyRoom)n))
-                                    remove((PolyRoom)n);
+                            if(n instanceof Room)
+                                if(rooms.contains((Room)n))
+                                    remove((Room)n);
                         });
                 }
             }
@@ -76,22 +76,22 @@ public class MapArea extends Pane {
         rooms.clear();
     }
     
-    public void add(PolyRoom r){
+    public void add(Room r){
         rooms.add(r);
     }
     
-    public void remove(PolyRoom r){
+    public void remove(Room r){
         rooms.remove(r);
     }
     
-    public void removeAll(List<PolyRoom> l){
+    public void removeAll(List<Room> l){
         l.stream()
          .forEach( (r) -> {
              remove(r);
          });
     }
     
-    public ObservableList<PolyRoom> getRooms(){
+    public ObservableList<Room> getRooms(){
         return rooms;
     }
 }

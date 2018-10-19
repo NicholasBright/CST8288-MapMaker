@@ -17,7 +17,7 @@ import javafx.scene.shape.Circle;
  * @author owner
  */
 public class ControlPoint extends Circle implements TranslatableElement, SelectableElement, RemovableElement {
-    PolyRoom owner;
+    Room owner;
     
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     
@@ -41,15 +41,15 @@ public class ControlPoint extends Circle implements TranslatableElement, Selecta
         }
     };
     
-    public ControlPoint (PolyRoom owner){
+    public ControlPoint (Room owner){
         this(owner, 100.0,100.0);
     }
     
-    public ControlPoint(PolyRoom owner, Point2D pos){
+    public ControlPoint(Room owner, Point2D pos){
         this(owner, pos.getX(), pos.getY());
     }
     
-    public ControlPoint(PolyRoom owner, Double x, Double y){
+    public ControlPoint(Room owner, Double x, Double y){
         super(x, y, 3.5);
         this.getStyleClass().add("control-point");
         this.owner = owner;
@@ -73,7 +73,7 @@ public class ControlPoint extends Circle implements TranslatableElement, Selecta
         setCenterY(getCenterY() + yTrans);
     }
     
-    public PolyRoom getOwner(){
+    public Room getOwner(){
         return owner;
     }
     
