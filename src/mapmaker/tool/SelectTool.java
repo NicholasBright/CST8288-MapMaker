@@ -47,17 +47,6 @@ public class SelectTool extends Tool {
     @Override
     public void mouseClicked(MouseEvent e) {
         if(!draggedFlag){
-            /*target.getChildren()
-                .stream()
-                .forEach((n) -> {
-                    if(n instanceof ){
-                        Room r = (Room)n;
-                        boolean clicked = (r.contains(startPoint) && r.contains(new Point2D(e.getX(), e.getY())));
-                        if(!(e.isShiftDown() && !clicked))
-                            r.setSelected(clicked);
-                    }
-                });
-            target.getChildren().remove(selectedArea);*/
             if(e.getTarget() instanceof SelectableElement)
                 ((SelectableElement)e.getTarget()).setSelected(true);
             if(e.getClickCount() > 1)
@@ -71,21 +60,6 @@ public class SelectTool extends Tool {
     public void mouseReleased(MouseEvent e) {
         if(draggedFlag){
             selectChildren(target);
-            /*
-            target.getChildren().stream().forEach((n) -> {
-                if(n instanceof SelectableElement && selectedArea.getBoundsInParent().contains(n.getBoundsInParent()))
-                    ((SelectableElement)n).setSelected(true);
-                /*if(n instanceof Room){
-                    Room r = (Room)n;
-                    r.getControlPoints()
-                        .stream()
-                        .forEach((cp) -> {
-                            boolean clicked = selectedArea.getBoundsInParent().intersects(cp.getBoundsInParent());
-                            if(!(e.isShiftDown() && !clicked))
-                                cp.setSelected(clicked);
-                    });
-                }
-            });*/
             target.getChildren().remove(selectedArea);
         }
     }
