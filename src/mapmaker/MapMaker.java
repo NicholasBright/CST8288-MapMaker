@@ -3,7 +3,6 @@ package mapmaker;
 import java.io.FileNotFoundException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -231,6 +230,10 @@ public class MapMaker extends Application {
             }),
             createMenuItem("Hexagon", e -> {
                     ToolState.getToolState().setActiveTool(new CreateRoomTool(mapArea), 6);
+                    descriptionProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
+            }),
+            createMenuItem("Irregular", e -> {
+                    ToolState.getToolState().setActiveTool(new CreateRoomTool(mapArea), -1);
                     descriptionProperty.set(ToolState.getToolState().getActiveTool().getDescriptionProperty().get());
             })
         );

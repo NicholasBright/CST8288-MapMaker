@@ -5,7 +5,7 @@
  */
 package mapmaker.tool;
 
-import javafx.scene.Node;
+import javafx.scene.Cursor;
 import javafx.scene.input.MouseEvent;
 import mapmaker.MapArea;
 import mapmaker.mapelement.RemovableElement;
@@ -41,6 +41,10 @@ public class EraseTool extends Tool {
     
     @Override
     public void mouseMoved(MouseEvent e) {
+        if(e.getTarget() instanceof RemovableElement)
+            target.getScene().setCursor(Cursor.DISAPPEAR);
+        else
+            target.getScene().setCursor(Cursor.DEFAULT);
     }
     
     @Override

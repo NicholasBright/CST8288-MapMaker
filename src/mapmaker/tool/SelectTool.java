@@ -10,9 +10,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
 import mapmaker.MapArea;
 import mapmaker.mapelement.SelectableElement;
 
@@ -29,26 +27,27 @@ public class SelectTool extends Tool {
         super("Select Tool", "Click and drag to select Control Points, or click on a Room to select all of it's Control Points", target);
         selectedArea = new Rectangle(0,0, 0, 10.0);
         //This style is programatically set to stop the select area from breaking out of the pane
-        selectedArea.setStyle("-fx-stroke-type: inside;");
+        //selectedArea.setStyle("-fx-stroke-type: inside;");
         selectedArea.setId("SelectionArea");
     }
     
     @Override
     public void mousePressed(MouseEvent e) {
         reset();
+        selectedArea.setX(-1);
+        selectedArea.setY(-1);
         selectedArea.setWidth(0);
+        selectedArea.setHeight(0);
         startPoint = new Point2D(e.getX(), e.getY());
         target.getChildren().add(selectedArea);
         draggedFlag = false;
-        if(!e.isShiftDown())
-            unselectAll(target);
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
         if(!draggedFlag){
             if(e.getTarget() instanceof SelectableElement)
-                ((SelectableElement)e.getTarget()).setSelected(true);
+                ((SelectableElement)e.getTarget()).setSelected(!((SelectableElement)e.getTarget()).isSelected());
             if(e.getClickCount() > 1)
                 if(e.getTarget() instanceof Node)
                     ((Node)e.getTarget()).toFront();
@@ -59,8 +58,15 @@ public class SelectTool extends Tool {
     @Override
     public void mouseReleased(MouseEvent e) {
         if(draggedFlag){
+            if(!e.isShiftDown())
+                unselectAll(target);
             selectChildren(target);
             target.getChildren().remove(selectedArea);
+            draggedFlag = false;
+        }
+        else {
+            if(!(e.getTarget() instanceof SelectableElement))
+                unselectAll(target);
         }
     }
 
@@ -71,8 +77,6 @@ public class SelectTool extends Tool {
         
         if(eX < target.getBoundsInLocal().getMinX())
             eX = 0;
-        else if (eX > target.getBoundsInLocal().getMaxX())
-            eX = target.getBoundsInLocal().getWidth();
         
         if(eX >= startPoint.getX()){
             selectedArea.setX(startPoint.getX());
@@ -85,8 +89,6 @@ public class SelectTool extends Tool {
         
         if(eY < target.getBoundsInLocal().getMinY())
             eY = 0;
-        else if (eY > target.getBoundsInLocal().getMaxY())
-            eY = target.getBoundsInLocal().getHeight();
         
         if(eY >= startPoint.getY()){
             selectedArea.setY(startPoint.getY());
@@ -101,10 +103,12 @@ public class SelectTool extends Tool {
     
     @Override
     public void mouseMoved(MouseEvent e){
-        if(e.getTarget() instanceof SelectableElement)
-            target.getScene().setCursor(Cursor.HAND);
-        else
-            target.getScene().setCursor(Cursor.DEFAULT);
+        if(!draggedFlag){
+            if(e.getTarget() instanceof SelectableElement)
+                target.getScene().setCursor(Cursor.HAND);
+            else
+                target.getScene().setCursor(Cursor.DEFAULT);
+        }
     }
     
     @Override

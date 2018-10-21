@@ -16,6 +16,7 @@ import javafx.css.PseudoClass;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Parent;
+import javafx.scene.control.Tooltip;
 import javafx.scene.shape.Polygon;
 import javafx.scene.transform.Rotate;
 import mapmaker.MapArea;
@@ -25,6 +26,7 @@ public final class Room
         implements SelectableElement, TranslatableElement, RemovableElement, ModifiableProperties {
     
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
+    private static PseudoClass OOB_PSEUDO_CLASS = PseudoClass.getPseudoClass("out-of-bounds");
     
     private boolean triggerListenerFlag = true;
     private Group controlPointGroup = new Group(){};
@@ -134,6 +136,26 @@ public final class Room
         }
     };
     
+    private final BooleanProperty oobProperty = new SimpleBooleanProperty(false) {
+        @Override
+        public void invalidated() {
+            pseudoClassStateChanged(OOB_PSEUDO_CLASS, get());
+        }
+
+        @Override
+        public String getName() {
+            return "Selected";
+        }
+
+        /*@Override
+        public void set(boolean b){
+            super.set(b);
+            controlPoints.stream().forEach((cp) -> {
+                cp.setSelected(b);
+            });
+        }*/
+    };
+    
     public Room(){
         this(0.0, 0.0);
     }
@@ -204,6 +226,11 @@ public final class Room
                 normalizeShape(vectorToFirstCP.getX() + getCenterX(), vectorToFirstCP.getY() + getCenterY());
                 triggerListenerFlag = true;
             }
+        });
+        Tooltip oobTP = new Tooltip("Out of bounds");
+        boundsInParentProperty().addListener((o, oV, nV)->{
+            oobProperty.set(nV.getMinX() < 0 || nV.getMinY() < 0);
+            if(oobProperty.get()) Tooltip.install(this, oobTP); else Tooltip.uninstall(this, oobTP);
         });
     }
     
@@ -298,7 +325,7 @@ public final class Room
         } else {
             getPoints().addAll(cp.getCenterX(), cp.getCenterY()); 
         }
-        numSidesProperty().set(controlPoints.size()-1);
+        numSidesProperty().set(controlPoints.size());
         nameProperty().set(null);
         triggerListenerFlag = true;
     }
