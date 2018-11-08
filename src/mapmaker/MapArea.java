@@ -4,6 +4,7 @@ import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import mapmaker.mapelement.Room;
@@ -41,6 +42,29 @@ public class MapArea extends Pane {
                             if(super.getChildren().contains(r.getControlPoints()))
                                 super.getChildren().remove(r.getControlPoints());
                             
+                        });
+                }
+            }
+        });
+        
+        super.getChildren().addListener((ListChangeListener.Change<? extends Node> c) -> {
+            while(c.next()){
+                if(c.wasAdded()){
+                    c.getAddedSubList()
+                        .stream()
+                        .filter((n) -> n instanceof Room)
+                        .forEach((n) -> {
+                            if(!rooms.contains(Room.class.cast(n)))
+                                rooms.add(Room.class.cast(n));
+                        });
+                }
+                else if(c.wasRemoved()){
+                    c.getRemoved()
+                        .stream()
+                        .filter((n) -> n instanceof Room)
+                        .forEach((n) -> {
+                            if(rooms.contains(Room.class.cast(n)))
+                                rooms.remove(Room.class.cast(n));
                         });
                 }
             }

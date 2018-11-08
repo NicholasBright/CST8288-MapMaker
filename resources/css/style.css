@@ -103,7 +103,7 @@
     -fx-fill:                   linear-gradient(from 0px 0px to 5px 5px, reflect,  red 10%, -room-fill 50%);
 }
 
-.control-point {
+.control-point, .end-point {
     -fx-fill:                   white;
     -fx-stroke:                 black;
 }
@@ -159,4 +159,9 @@
 
 #DetailsBox {
     -fx-min-width: 180px;
+}
+
+.path {
+    -fx-stroke-width: 4px;
+    -fx-stroke: orange;
 }

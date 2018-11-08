@@ -31,6 +31,10 @@ public class ResourceManager{
         return f.toURI().toString();
     }
     
+    public void saveMapArea(MapArea ma){
+        
+    }
+    
     public static ResourceManager get(){
         return RESOURCE_MANAGER;
     }

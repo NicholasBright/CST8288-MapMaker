@@ -5,10 +5,13 @@
  */
 package mapmaker.mapelement;
 
+import java.util.ArrayList;
+import java.util.List;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.css.PseudoClass;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.shape.Circle;
 
 /**
@@ -77,7 +80,8 @@ public class ControlPoint extends Circle implements TranslatableElement, Selecta
     }
     
     @Override
-    public void remove(){
+    public List<Node> remove(){
         getOwner().removeControlPoint(this);
+        return new ArrayList<>();
     }
 }

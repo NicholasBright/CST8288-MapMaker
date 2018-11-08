@@ -1,5 +1,7 @@
 package mapmaker.mapelement;
 
+import java.util.ArrayList;
+import java.util.List;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
@@ -15,22 +17,26 @@ import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Tooltip;
 import javafx.scene.shape.Polygon;
 import javafx.scene.transform.Rotate;
-import mapmaker.MapArea;
 
 public final class Room
         extends Polygon
         implements SelectableElement, TranslatableElement, RemovableElement, ModifiableProperties {
     
+    private static int nextID = 0;
+    
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     private static PseudoClass OOB_PSEUDO_CLASS = PseudoClass.getPseudoClass("out-of-bounds");
     
+    private int ID;
     private boolean triggerListenerFlag = true;
     private Group controlPointGroup = new Group(){};
     private ObservableList<ControlPoint> controlPoints = FXCollections.observableArrayList();
+    private ObservableList<Path> paths = FXCollections.observableArrayList();
     
     private final DoubleProperty radiusProperty = new SimpleDoubleProperty(0.0){
         @Override
@@ -96,6 +102,7 @@ public final class Room
             }
             else if(!customNameFlag) {
                 String[] names = {
+                    "Empty",
                     "Point",
                     "Line",
                     "Triangle",
@@ -104,7 +111,7 @@ public final class Room
                     "Hexagon",
                     "Polygon",
                 };
-                super.set(names[Math.min(getNumSides(), names.length) - 1]);
+                super.set(names[Math.min(getNumSides(), names.length)]);
             }
         }
     };
@@ -170,6 +177,8 @@ public final class Room
     
     public Room(double centerX, double centerY, double radius, int numSides){
         triggerListenerFlag = false;
+        
+        ID = nextID++;
         
         initializeListeners();
         
@@ -264,7 +273,8 @@ public final class Room
     
     public void normalizeShape(){
         triggerListenerFlag = false;
-        normalizeShape(controlPoints.get(0).getCenterX(), controlPoints.get(0).getCenterY());
+        if(numSidesProperty.get() > 0)
+            normalizeShape(controlPoints.get(0).getCenterX(), controlPoints.get(0).getCenterY());
         triggerListenerFlag = true;
     }
     
@@ -283,6 +293,9 @@ public final class Room
         
         triggerListenerFlag = false;
         setRadius((new Point2D(firstX, firstY)).distance(getCenterX(), getCenterY()));
+        if(getRadius() < 1){
+            setRadius(1.0);
+        }
         
         ControlPoint firstPoint = controlPoints.get(0);
         firstPoint.setCenterX(firstX);
@@ -330,17 +343,20 @@ public final class Room
         triggerListenerFlag = true;
     }
     
-    public void removeControlPoint(ControlPoint cp){
+    public boolean removeControlPoint(ControlPoint cp){
         if(controlPoints.contains(cp)){
-            if(controlPoints.size() < 3)
+            /*if(controlPoints.size() < 3)
                 ((MapArea)getParent()).remove(this);
-            else {
+            else {*/
                 controlPoints.remove(cp);
+                controlPointGroup.getChildren().remove(cp);
                 numSidesProperty().set(controlPoints.size());
                 normalizeShape();
-            }
+            //}
+            return true;
         }
         nameProperty().set(null);
+        return false;
     }
     
     public ObservableList<ControlPoint> getControlPointList(){
@@ -349,6 +365,18 @@ public final class Room
     
     public Parent getControlPoints(){
         return controlPointGroup;
+    }
+    
+    public void addPath(Path p){
+        paths.add(p);
+    }
+    
+    public boolean removePath(Path p){
+        return paths.remove(p);
+    }
+    
+    public ObservableList<Path> getPaths(){
+        return paths;
     }
     
     public double getRadius(){
@@ -466,10 +494,11 @@ public final class Room
     }
     
     @Override
-    public void remove(){
-        if(getParent() instanceof MapArea){
-            MapArea.class.cast(getParent()).remove(this);
-        }
+    public List<Node> remove(){
+        List<Node> l = new ArrayList<>();
+        l.add(this);
+        l.add(controlPointGroup);
+        return l;
     }
 
     @Override

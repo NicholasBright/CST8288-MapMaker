@@ -27,7 +27,7 @@ public class EraseTool extends Tool {
     @Override
     public void mouseClicked(MouseEvent e) {
         if(e.getTarget() instanceof RemovableElement){
-            ((RemovableElement)e.getTarget()).remove();
+            target.getChildren().removeAll(((RemovableElement)e.getTarget()).remove());
         }
     }
 

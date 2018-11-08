@@ -48,9 +48,6 @@ public class SelectTool extends Tool {
         if(!draggedFlag){
             if(e.getTarget() instanceof SelectableElement)
                 ((SelectableElement)e.getTarget()).setSelected(!((SelectableElement)e.getTarget()).isSelected());
-            if(e.getClickCount() > 1)
-                if(e.getTarget() instanceof Node)
-                    ((Node)e.getTarget()).toFront();
             target.getChildren().remove(selectedArea);
         }
     }

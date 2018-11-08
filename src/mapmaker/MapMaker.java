@@ -305,7 +305,6 @@ public class MapMaker extends Application {
         roomListView.getSelectionModel().selectedItemProperty().addListener((o, oV, nV)->{
             optionsList.getItems().clear();
             if(nV != null){
-                //nV.setStyle("-fx-underline: true; ");
                 optionsList.setItems(buildOptionList(((Room)nV.getUserData()).getModifiablePropertiesList()));
             }
         });
