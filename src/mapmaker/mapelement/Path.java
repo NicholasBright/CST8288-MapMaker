@@ -50,6 +50,14 @@ public class Path extends Line implements RemovableElement, TranslatableElement 
         endPoint.setCenterY(end.getCenterY()+vector.getY());
     }
     
+    public Room getStart(){
+        return start;
+    }
+    
+    public Room getEnd(){
+        return end;
+    }
+    
     public EndPoint getStartPoint(){
         return startPoint;
     }

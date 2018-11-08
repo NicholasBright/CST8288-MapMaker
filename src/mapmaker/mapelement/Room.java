@@ -27,8 +27,6 @@ public final class Room
         extends Polygon
         implements SelectableElement, TranslatableElement, RemovableElement, ModifiableProperties {
     
-    private static int nextID = 0;
-    
     private static PseudoClass SELECTED_PSEUDO_CLASS = PseudoClass.getPseudoClass("selected");
     private static PseudoClass OOB_PSEUDO_CLASS = PseudoClass.getPseudoClass("out-of-bounds");
     
@@ -177,8 +175,6 @@ public final class Room
     
     public Room(double centerX, double centerY, double radius, int numSides){
         triggerListenerFlag = false;
-        
-        ID = nextID++;
         
         initializeListeners();
         

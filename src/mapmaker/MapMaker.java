@@ -55,6 +55,7 @@ import mapmaker.tool.ToolState;
 import mapmaker.uielements.ValidatedTextField;
 
 public class MapMaker extends Application {
+    private Stage                   primaryStage;
     private MapArea                 mapArea;
     private ScrollPane              centerPane;
     private Scene                   rootScene;
@@ -73,6 +74,7 @@ public class MapMaker extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        this.primaryStage = primaryStage;
         
         descriptionProperty = new SimpleStringProperty();
         messageList = FXCollections.observableArrayList();
@@ -115,6 +117,10 @@ public class MapMaker extends Application {
                     mapArea.reset();
                 }),
                 createMenuItem("Save", (e) -> {
+                    ResourceManager.get().saveMapArea(primaryStage, mapArea);
+                }),
+                createMenuItem("Load", (e) -> {
+                    ResourceManager.get().loadMapArea(primaryStage, mapArea);
                 }),
                 createMenuItem("Reload Style", (e) -> {
                     loadStylesheet();
