@@ -145,11 +145,11 @@ public class ResourceManager{
                 Room r = new Room();
                 for(String s : l){
                     String[] values = s.split(" ");
-                    switch(values[0]){
+                    switch(values[0].toLowerCase()){
                         case "sides":
                             r.setNumSides(Integer.parseInt(values[1]));
                             break;
-                        case "ID":
+                        case "id":
                             roomMap.put(Integer.parseInt(values[1]), r);
                             break;
                         case "strokeWidth":
@@ -168,8 +168,8 @@ public class ResourceManager{
                             double cX = 0.0;
                             double cY = 0.0;
                             for(int p=1; p+1< values.length; p+=2){
-                                cX += Integer.parseInt(values[p]);
-                                cY += Integer.parseInt(values[p+1]);
+                                cX += Double.parseDouble(values[p]);
+                                cY += Double.parseDouble(values[p+1]);
                             }
                             cX = cX/((values.length-1)/2);
                             cY = cY/((values.length-1)/2);
