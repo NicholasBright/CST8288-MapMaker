@@ -149,6 +149,7 @@ public class ResourceManager{
                         case "sides":
                             r.setNumSides(Integer.parseInt(values[1]));
                             break;
+                        case "id":
                         case "ID":
                             roomMap.put(Integer.parseInt(values[1]), r);
                             break;
@@ -168,8 +169,8 @@ public class ResourceManager{
                             double cX = 0.0;
                             double cY = 0.0;
                             for(int p=1; p+1< values.length; p+=2){
-                                cX += Integer.parseInt(values[p]);
-                                cY += Integer.parseInt(values[p+1]);
+                                cX += Double.parseDouble(values[p]);
+                                cY += Double.parseDouble(values[p+1]);
                             }
                             cX = cX/((values.length-1)/2);
                             cY = cY/((values.length-1)/2);
