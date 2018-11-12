@@ -29,11 +29,22 @@ public final class CreateRoomTool extends Tool {
             target.getScene().setCursor(Cursor.CLOSED_HAND);
         } else if (createdRoom == null){
             irregularFlag = true;
-            createdRoom = new Room(e.getX(), e.getY(), 0.0, 0);
-            createdRoom.setRegular(false);
+            boolean foundSelected = false;
+            for(Room room : target.getRooms()){
+                if(room.isSelected() && !foundSelected){
+                    foundSelected = true;
+                    if(!room.isRegular())
+                    createdRoom = room;
+                }
+            }
+            if(createdRoom == null){
+                createdRoom = new Room(e.getX(), e.getY(), 0.0, 0);
+                createdRoom.setRegular(false);
+            }
         }
         
-        target.add(createdRoom);
+        if(!target.getRooms().contains(createdRoom))
+            target.add(createdRoom);
     }
 
     @Override

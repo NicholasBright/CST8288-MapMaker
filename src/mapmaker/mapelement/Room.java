@@ -52,7 +52,8 @@ public final class Room
         @Override
         public void set(double value){
             if(triggerListenerFlag){
-                translate(value - get(),0);
+                if(isRegular())
+                    translate(value - get(),0);
             }
             else {
                 super.set(value);
@@ -69,7 +70,8 @@ public final class Room
         @Override
         public void set(double value){
             if(triggerListenerFlag){
-                translate(0, value - get());
+                if(isRegular())
+                    translate(0, value - get());
             }
             else {
                 super.set(value);
@@ -109,7 +111,7 @@ public final class Room
                     "Hexagon",
                     "Polygon",
                 };
-                super.set(names[Math.min(getNumSides(), names.length)]);
+                super.set(names[Math.min(getNumSides(), names.length-1)]);
             }
         }
     };
@@ -151,14 +153,6 @@ public final class Room
         public String getName() {
             return "Selected";
         }
-
-        /*@Override
-        public void set(boolean b){
-            super.set(b);
-            controlPoints.stream().forEach((cp) -> {
-                cp.setSelected(b);
-            });
-        }*/
     };
     
     public Room(){
@@ -200,14 +194,20 @@ public final class Room
                     while(i-- > 0){
                         controlPoints.add(initializeNewControlPoint());
                     }
-                    normalizeShape();
+                    if(isRegular())
+                        normalizeShape();
+                    else
+                        this.fixToPoints();
                 }
                 else if(nV.intValue() < controlPoints.size()){
                     int i = controlPoints.size() - nV.intValue();
                     while(i-- > 0){
                         controlPoints.remove(controlPoints.size()-1);
                     }
-                    normalizeShape();
+                    if(isRegular())
+                        normalizeShape();
+                    else
+                        this.fixToPoints();
                 }
             }
         });
@@ -237,6 +237,14 @@ public final class Room
             oobProperty.set(nV.getMinX() < 0 || nV.getMinY() < 0);
             if(oobProperty.get()) Tooltip.install(this, oobTP); else Tooltip.uninstall(this, oobTP);
         });
+        regularProperty.addListener((o,oV,nV)->{
+            if(triggerListenerFlag){
+                triggerListenerFlag = false;
+                if(!nV)
+                    setRadius(0.0);
+                triggerListenerFlag=true;
+            }
+        });
     }
     
     private ControlPoint initializeNewControlPoint(){
@@ -249,8 +257,10 @@ public final class Room
                     while(!controlPoints.get(0).equals(newCP))
                         controlPoints.add(controlPoints.remove(0));
                     normalizeShape(Double.class.cast(nV), newCP.getCenterY());
-                } else
+                } else{
                     getPoints().set(controlPoints.indexOf(newCP)*2, Double.class.cast(nV));
+                    setIrregularCenter();
+                }
             }
         });
         newCP.centerYProperty().addListener((o, oV, nV)->{
@@ -259,8 +269,10 @@ public final class Room
                     while(!controlPoints.get(0).equals(newCP))
                         controlPoints.add(controlPoints.remove(0));
                     normalizeShape(newCP.getCenterX(), Double.class.cast(nV));
-                } else
+                } else{
                     getPoints().set(controlPoints.indexOf(newCP)*2+1, Double.class.cast(nV));
+                    setIrregularCenter();
+                }
             }
         });
         newCP.setSelected(isSelected());
@@ -321,6 +333,21 @@ public final class Room
             .forEach( (cp) -> {
                 getPoints().addAll(cp.getCenterX(), cp.getCenterY());
             });
+        if(!isRegular()){
+            setIrregularCenter();
+        }
+    }
+    
+    private void setIrregularCenter(){
+        double xAvg = 0, yAvg = 0;
+        for(ControlPoint cp : controlPoints){
+            xAvg += cp.getCenterX();
+            yAvg += cp.getCenterY();
+        }
+        triggerListenerFlag = false;
+        this.setCenterX(xAvg/controlPoints.size());
+        this.setCenterY(yAvg/controlPoints.size());
+        triggerListenerFlag = true;
     }
     
     public void addControlPoint(double x, double y) {
@@ -336,19 +363,20 @@ public final class Room
         }
         numSidesProperty().set(controlPoints.size());
         nameProperty().set(null);
+        if(!isRegular())
+            setIrregularCenter();
         triggerListenerFlag = true;
     }
     
     public boolean removeControlPoint(ControlPoint cp){
         if(controlPoints.contains(cp)){
-            /*if(controlPoints.size() < 3)
-                ((MapArea)getParent()).remove(this);
-            else {*/
-                controlPoints.remove(cp);
-                controlPointGroup.getChildren().remove(cp);
-                numSidesProperty().set(controlPoints.size());
+            controlPoints.remove(cp);
+            controlPointGroup.getChildren().remove(cp);
+            numSidesProperty().set(controlPoints.size());
+            if(isRegular())
                 normalizeShape();
-            //}
+            else
+                fixToPoints();
             return true;
         }
         nameProperty().set(null);
@@ -494,6 +522,11 @@ public final class Room
         List<Node> l = new ArrayList<>();
         l.add(this);
         l.add(controlPointGroup);
+        paths.stream().forEach((path)->{
+            l.add(path);
+            l.add(path.getStartPoint());
+            l.add(path.getEndPoint());
+        });
         return l;
     }
 
