@@ -145,7 +145,7 @@ public class ResourceManager{
                 Room r = new Room();
                 for(String s : l){
                     String[] values = s.split(" ");
-                    switch(values[0]){
+                    switch(values[0].toLowerCase()){
                         case "sides":
                             r.setNumSides(Integer.parseInt(values[1]));
                             break;
